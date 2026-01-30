@@ -98,4 +98,17 @@ This workflow supports full CRUD functionality and demonstrates a complete end-t
 - Password hashing (no plain-text storage)
 - Authorization checks for edit/delete actions
 - Parameterized queries / ORM to prevent SQL injection
-- Out
+- Output escaping or sanitization to reduce XSS risk
+
+---
+## Project Management
+- GitHub Issues are used to track tasks
+- GitHub Projects (Kanban) board columns:
+  - Backlog
+  - Ready
+  - In Progress
+  - In Review
+  - Done
+- Tasks are assigned to team members and moved across columns as work progresses
+
+
