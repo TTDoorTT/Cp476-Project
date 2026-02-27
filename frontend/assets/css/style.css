@@ -6,7 +6,7 @@ body {
     margin: 0; 
     font-family: Arial, sans-serif; 
     line-height: 1.4; 
-    background: linear-gradient(to right, #667eea, #764ba2);
+    background: #ffffff;
     min-height: 100vh;
 }
 
@@ -30,14 +30,14 @@ body {
 .brand a { 
     text-decoration: none; 
     font-weight: 700; 
-    color: #ffff; 
+    color: #000000; 
     letter-spacing: 0.2px;
 }
 
 .nav a { 
     margin-left: 12px; 
     text-decoration: none; 
-    color: #ffff; 
+    color: #000000; 
     font-weight: 600;
     padding: 6px 10px;
     border-radius: 6px;
@@ -121,7 +121,7 @@ label {
 }
 
 .small {
-    color: rgba(255,255,255,0.8); 
+    color: rgba(0, 0, 0, 0.8); 
     font-size: 0.9rem; 
 }
 
