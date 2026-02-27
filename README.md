@@ -119,7 +119,7 @@ This workflow supports full CRUD functionality and demonstrates a complete end-t
 
 ## Getting Started (Milestone 2)
 
-### 1 Start the Database (Docker)
+### Database (Docker)
 From the repo root:
 ```bash
 docker compose up -d
@@ -149,8 +149,15 @@ DB test:
 ```bash
 curl http://localhost:3000/db-test
 ```
-### Frontend
-- (placeholder)
 
-### Database
-- (placeholder)
+### Frontend
+Milestone 2 frontend is a multi-page HTML UI shell.
+Open using one of:
+- VSCode Live Preview / Live Server extension
+- Or open frontend/index.html in a browser
+Pages:
+- frontend/index.html
+- frontend/pages/topics.html
+- frontend/pages/topic-detail.html?id=1
+- frontend/pages/topic-create.html
+- frontend/pages/login.html
