@@ -90,6 +90,7 @@ This workflow supports full CRUD functionality and demonstrates a complete end-t
 - created_at
 - updated_at
 - is_deleted
+- deleted_at
 
 ---
 
