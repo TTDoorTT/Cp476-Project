@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Login / Register — CP476 Forum</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-row">
+        <div class="brand">
+          <a href="../index.html">CP476 Forum</a>
+        </div>
+        <nav class="nav">
+          <a href="./topics.html">Topics</a>
+          <a href="./login.html" id="nav-login">Login</a>
+          <a href="./login.html" id="nav-register">Register</a>
+          <a href="./topics.html" id="nav-logout" class="hidden">Logout</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <h1>Login / Register</h1>
+      <p class="small">
+        Milestone 2: UI-only auth (backend auth integration in M3).
+      </p>
+
+      <div class="row">
+        <div class="card" style="flex: 1; min-width: 280px">
+          <h2 style="margin-top: 0">Login</h2>
+          <form id="login-form">
+            <label for="login-user">Username or Email</label>
+            <input class="input" id="login-user" name="user" required />
+
+            <label for="login-pass">Password</label>
+            <input
+              class="input"
+              id="login-pass"
+              name="pass"
+              type="password"
+              required
+            />
+
+            <div
+              id="login-error"
+              class="small"
+              style="margin-top: 10px; color: #b00020"
+            ></div>
+
+            <div style="margin-top: 12px">
+              <button class="btn primary" type="submit">Login</button>
+            </div>
+          </form>
+        </div>
+
+        <div class="card" style="flex: 1; min-width: 280px">
+          <h2 style="margin-top: 0">Register</h2>
+          <form id="reg-form">
+            <label for="reg-username">Username</label>
+            <input
+              class="input"
+              id="reg-username"
+              name="username"
+              maxlength="50"
+              required
+            />
+
+            <label for="reg-email">Email</label>
+            <input
+              class="input"
+              id="reg-email"
+              name="email"
+              type="email"
+              maxlength="254"
+              required
+            />
+
+            <label for="reg-pass">Password</label>
+            <input
+              class="input"
+              id="reg-pass"
+              name="pass"
+              type="password"
+              required
+            />
+
+            <div
+              id="reg-error"
+              class="small"
+              style="margin-top: 10px; color: #b00020"
+            ></div>
+
+            <div style="margin-top: 12px">
+              <button class="btn primary" type="submit">Register</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin-top: 0">M2 Mock Auth Controls</h3>
+        <p class="small">
+          These buttons simulate login/logout for UI navigation only.
+        </p>
+        <button class="btn primary" id="mock-login">Set Logged In</button>
+        <button class="btn" id="mock-logout">Set Logged Out</button>
+      </div>
+    </main>
+
+    <script src="../assets/js/common.js"></script>
+    <script>
+      // M2 UI-only validation
+      const loginForm = document.getElementById("login-form");
+      const loginErr = document.getElementById("login-error");
+      loginForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        loginErr.textContent = "";
+        const u = loginForm.user.value.trim();
+        const p = loginForm.pass.value.trim();
+        if (!u || !p) {
+          loginErr.textContent = "Both fields are required.";
+          return;
+        }
+        alert(
+          "M2 mock: login submitted (no backend yet). Use 'Set Logged In' to simulate.",
+        );
+      });
+
+      const regForm = document.getElementById("reg-form");
+      const regErr = document.getElementById("reg-error");
+      regForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        regErr.textContent = "";
+        const username = regForm.username.value.trim();
+        const email = regForm.email.value.trim();
+        const pass = regForm.pass.value.trim();
+        if (!username || !email || !pass) {
+          regErr.textContent = "All fields are required.";
+          return;
+        }
+        alert("M2 mock: register submitted (no backend yet).");
+      });
+
+      // Toggle mock auth state used by common.js
+      document.getElementById("mock-login").addEventListener("click", () => {
+        localStorage.setItem("isLoggedIn", "true");
+        alert("Mock state set: logged in. Go to Topics.");
+        window.location.href = "./topics.html";
+      });
+
+      document.getElementById("mock-logout").addEventListener("click", () => {
+        localStorage.setItem("isLoggedIn", "false");
+        alert("Mock state set: logged out.");
+        window.location.reload();
+      });
+    </script>
+  </body>
+</html>
