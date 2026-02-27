@@ -117,10 +117,38 @@ This workflow supports full CRUD functionality and demonstrates a complete end-t
 - `/sql` — schema and seed scripts
 - `/docs` — milestone documents (ER diagram, meeting logs, reports)
 
-## Getting Started (WIP)
-### Backend
-- (placeholder)
+## Getting Started (Milestone 2)
 
+### 1 Start the Database (Docker)
+From the repo root:
+```bash
+docker compose up -d
+```
+Load the schema into MySQL:
+```bash
+docker exec -i cp476_mysql mysql -ucp476 -pcp476pass cp476_forum < sql/schema.sql
+```
+Verify tables:
+```bash
+docker exec -it cp476_mysql mysql -ucp476 -pcp476pass -e "SHOW TABLES;" cp476_forum
+```
+Expected tables: users, topics, replies
+
+### Backend (Node + Express)
+```bash
+cd backend
+npm install
+cp .env.example .env
+npm run dev
+```
+Health check:
+```bash
+curl http://localhost:3000/health
+```
+DB test:
+```bash
+curl http://localhost:3000/db-test
+```
 ### Frontend
 - (placeholder)
 
