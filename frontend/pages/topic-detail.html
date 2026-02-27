@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Topic Detail — CP476 Forum</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-row">
+        <div class="brand">
+          <a href="../index.html">CP476 Forum</a>
+        </div>
+        <nav class="nav">
+          <a href="./topics.html">Topics</a>
+          <a href="./login.html" id="nav-login">Login</a>
+          <a href="./login.html" id="nav-register">Register</a>
+          <a href="./topics.html" id="nav-logout" class="hidden">Logout</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <a class="btn" href="./topics.html">← Back to Topics</a>
+
+      <div id="topic-card" class="card" style="margin-top: 12px">
+        <h1 id="topic-title" style="margin: 0 0 6px 0">Loading...</h1>
+        <div class="small" id="topic-meta"></div>
+        <p id="topic-body" style="margin-top: 12px"></p>
+
+        <div style="margin-top: 12px">
+          <a class="btn" href="./topic-create.html">Create Topic</a>
+          <a class="btn" href="./topics.html">Browse Topics</a>
+          <!-- M2 placeholder buttons (owner-only in M3) -->
+          <button class="btn" id="edit-topic">Edit</button>
+          <button class="btn" id="delete-topic">Delete</button>
+        </div>
+      </div>
+
+      <h2>Replies</h2>
+      <p class="small">
+        Milestone 2: replies are mock data (backend integration in M3).
+      </p>
+
+      <div id="replies"></div>
+
+      <div class="card">
+        <h3 style="margin-top: 0">Post a Reply (mock)</h3>
+        <form id="reply-form">
+          <label for="reply-body">Reply</label>
+          <textarea
+            class="input"
+            id="reply-body"
+            name="reply"
+            rows="4"
+            required
+          ></textarea>
+          <div
+            id="reply-error"
+            class="small"
+            style="margin-top: 10px; color: #b00020"
+          ></div>
+          <div style="margin-top: 12px">
+            <button class="btn primary" type="submit">Submit Reply</button>
+          </div>
+        </form>
+      </div>
+    </main>
+
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/mock-data.js"></script>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const id = Number(params.get("id"));
+
+      const topic =
+        window.MOCK_TOPICS.find((t) => t.id === id) || window.MOCK_TOPICS[0];
+      const replies = window.MOCK_REPLIES[topic.id] || [];
+
+      const titleEl = document.getElementById("topic-title");
+      const metaEl = document.getElementById("topic-meta");
+      const bodyEl = document.getElementById("topic-body");
+      const repliesEl = document.getElementById("replies");
+
+      titleEl.textContent = topic.title;
+      metaEl.textContent = `By ${topic.author} · ${topic.created_at}`;
+      bodyEl.textContent = topic.body;
+
+      function renderReply(r) {
+        const el = document.createElement("div");
+        el.className = "card";
+        el.innerHTML = `
+        <div class="small">By <b>${r.author}</b> · ${r.created_at}</div>
+        <p style="margin:10px 0 0 0;">${r.body}</p>
+        <div style="margin-top:10px;">
+          <button class="btn">Edit</button>
+          <button class="btn">Delete</button>
+        </div>
+      `;
+        return el;
+      }
+
+      if (replies.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "small";
+        empty.textContent = "No replies yet.";
+        repliesEl.appendChild(empty);
+      } else {
+        replies.forEach((r) => repliesEl.appendChild(renderReply(r)));
+      }
+
+      // M2 placeholders for edit/delete
+      document.getElementById("edit-topic").addEventListener("click", () => {
+        alert("M2 mock: Edit topic (owner-only in M3).");
+      });
+      document.getElementById("delete-topic").addEventListener("click", () => {
+        alert("M2 mock: Delete topic (owner-only in M3).");
+      });
+
+      // M2 reply form mock
+      const form = document.getElementById("reply-form");
+      const err = document.getElementById("reply-error");
+      form.addEventListener("submit", (e) => {
+        e.preventDefault();
+        err.textContent = "";
+        const text = form.reply.value.trim();
+        if (!text) {
+          err.textContent = "Reply cannot be empty.";
+          return;
+        }
+        alert("M2 mock: Reply posted (not saved).");
+        form.reset();
+      });
+    </script>
+  </body>
+</html>
