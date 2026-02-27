@@ -54,7 +54,7 @@ This workflow supports full CRUD functionality and demonstrates a complete end-t
 
 ## Tech Stack (Planned)
 - **Frontend:** HTML, CSS, JavaScript
-- **Backend:** (e.g., Node.js + Express OR PHP)
+- **Backend:** Node.js
 - **Database:** MySQL (relational database)
 - **Version Control:** GitHub
 - **Project Management:** GitHub Projects (Kanban)
