@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Topics — CP476 Forum</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="container header-row">
+        <div class="brand">
+          <a href="../index.html">CP476 Forum</a>
+        </div>
+        <nav class="nav">
+          <a href="./topics.html">Topics</a>
+          <a href="./login.html" id="nav-login">Login</a>
+          <a href="./login.html" id="nav-register">Register</a>
+          <a href="./topics.html" id="nav-logout" class="hidden">Logout</a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="container">
+      <div
+        class="row"
+        style="align-items: center; justify-content: space-between"
+      >
+        <h1>Topics</h1>
+        <a class="btn primary" href="./topic-create.html">+ Create Topic</a>
+      </div>
+
+      <p class="small">
+        Milestone 2: mock topic list (backend integration in M3).
+      </p>
+
+      <div id="topic-list"></div>
+    </main>
+
+    <script src="../assets/js/common.js"></script>
+    <script src="../assets/js/mock-data.js"></script>
+    <script>
+      const list = document.getElementById("topic-list");
+
+      function renderTopicCard(t) {
+        const el = document.createElement("div");
+        el.className = "card";
+        el.innerHTML = `
+        <h3 style="margin:0 0 6px 0;">${t.title}</h3>
+        <div class="small">By <b>${t.author}</b> · ${t.created_at}</div>
+        <div style="margin-top:10px;">
+          <a class="btn" href="./topic-detail.html?id=${t.id}">View Topic</a>
+        </div>
+      `;
+        return el;
+      }
+
+      window.MOCK_TOPICS.forEach((t) => list.appendChild(renderTopicCard(t)));
+    </script>
+  </body>
+</html>
