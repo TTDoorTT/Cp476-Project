@@ -66,31 +66,30 @@ This workflow supports full CRUD functionality and demonstrates a complete end-t
 ## Data Model (High-Level)
 
 ### Users
-- user_id (PK)
-- username
-- email
-- password_hash
-- role
-- created_at
+- id (PK, INT AUTO_INCREMENT)
+- username (VARCHAR, UNIQUE, NOT NULL)
+- email (VARCHAR, UNIQUE, NOT NULL)
+- password_hash (VARCHAR, NOT NULL)
+- created_at (DATETIME, NOT NULL default current)
+- deleted_at (DATETIME, NULL)
 
 ### Topics
-- topic_id (PK)
-- user_id (FK → Users)
-- title
-- body
-- is_locked
-- created_at
-- updated_at
+- id (PK)
+- user_id (FK → users.id, NOT NULL)
+- title (VARCHAR, NOT NULL)
+- body (TEXT, NOT NULL)
+- created_at (DATETIME, NOT NULL default current)
+- updated_at (DATETIME, NULL)
+- deleted_at (DATETIME, NULL)
 
 ### Posts (Replies)
-- post_id (PK)
-- topic_id (FK → Topics)
-- user_id (FK → Users)
-- body
-- created_at
-- updated_at
-- is_deleted
-- deleted_at
+- id (PK)
+- topic_id (FK → topics.id, NOT NULL)
+- user_id (FK → users.id, NOT NULL)
+- body (TEXT, NOT NULL)
+- created_at (DATETIME, NOT NULL default current)
+- updated_at (DATETIME, NULL)
+- deleted_at (DATETIME, NULL)
 
 ---
 
