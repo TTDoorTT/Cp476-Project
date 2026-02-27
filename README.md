@@ -111,4 +111,18 @@ This workflow supports full CRUD functionality and demonstrates a complete end-t
   - Done
 - Tasks are assigned to team members and moved across columns as work progresses
 
+## Repo Structure
+- `/frontend` — UI
+- `/backend` — API server
+- `/sql` — schema and seed scripts
+- `/docs` — milestone documents (ER diagram, meeting logs, reports)
 
+## Getting Started (WIP)
+### Backend
+- (placeholder)
+
+### Frontend
+- (placeholder)
+
+### Database
+- (placeholder)
