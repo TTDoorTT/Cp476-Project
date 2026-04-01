@@ -56,4 +56,58 @@ router.post("/register", async (req, res) => {
   }
 });
 
+// POST /auth/login
+router.post("/login", async (req, res) => {
+  try {
+    const { identifier, password } = req.body ?? {};
+
+    if (!identifier || !password) {
+      return res.status(400).json({
+        error: "validation_error",
+        message: "identifier and password are required"
+      });
+    }
+
+    const cleanIdentifier = String(identifier).trim().toLowerCase();
+    const cleanPassword = String(password);
+
+    // Find user by username OR email
+    const [rows] = await pool.query(
+      "SELECT id, username, email, password_hash, role FROM users WHERE username = ? OR email = ? LIMIT 1",
+      [cleanIdentifier, cleanIdentifier]
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({ error: "unauthorized", message: "invalid credentials" });
+    }
+
+    const user = rows[0];
+    const ok = await bcrypt.compare(cleanPassword, user.password_hash);
+
+    if (!ok) {
+      return res.status(401).json({ error: "unauthorized", message: "invalid credentials" });
+    }
+
+    // Save session
+    req.session.user = {
+      id: user.id,
+      username: user.username,
+      email: user.email,
+      role: user.role
+    };
+
+    return res.json({ message: "ok", user: req.session.user });
+  } catch (err) {
+    return res.status(500).json({ error: "server_error", message: err.message });
+  }
+});
+
+// GET /auth/me
+router.get("/me", (req, res) => {
+  if (!req.session?.user) {
+    return res.status(401).json({ error: "unauthorized", message: "not logged in" });
+  }
+  return res.json({ user: req.session.user });
+});
+
 module.exports = router;
