@@ -2,6 +2,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const authRouter = require("./routes/auth");
+const topicsRouter = require("./routes/topics");
 require("dotenv").config();
 
 const express = require("express");
@@ -43,6 +44,8 @@ const requireAuth = require("./middleware/requireAuth");
 app.get("/protected-test", requireAuth, (req, res) => {
   res.json({ ok: true, user: req.session.user });
 });
+
+app.use("/topics", topicsRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: "not_found", message: "Route not found" });
