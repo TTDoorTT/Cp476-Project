@@ -110,4 +110,16 @@ router.get("/me", (req, res) => {
   return res.json({ user: req.session.user });
 });
 
+// POST /auth/logout
+router.post("/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      return res.status(500).json({ error: "server_error", message: "failed to logout" });
+    }
+    // Clear cookie on client
+    res.clearCookie("connect.sid");
+    return res.json({ message: "ok" });
+  });
+});
+
 module.exports = router;

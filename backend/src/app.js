@@ -38,6 +38,12 @@ app.get("/session-test", (req, res) => {
 });
 app.use("/auth", authRouter);
 
+const requireAuth = require("./middleware/requireAuth");
+
+app.get("/protected-test", requireAuth, (req, res) => {
+  res.json({ ok: true, user: req.session.user });
+});
+
 app.use((req, res) => {
   res.status(404).json({ error: "not_found", message: "Route not found" });
 });
