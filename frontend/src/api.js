@@ -1,5 +1,6 @@
 const API_BASE = "http://localhost:3000";
 
+
 async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     credentials: "include",
@@ -34,6 +35,13 @@ export const api = {
       body: JSON.stringify({ body })
     }),
 
+  createTopic: (title, body) =>
+    apiFetch("/topics", {
+      method: "POST",
+      body: JSON.stringify({ title, body })
+    }),
+
+
   // Auth (we will wire UI later)
   login: (identifier, password) =>
     apiFetch("/auth/login", {
@@ -43,3 +51,4 @@ export const api = {
   me: () => apiFetch("/auth/me", { method: "GET" }),
   logout: () => apiFetch("/auth/logout", { method: "POST" })
 };
+
