@@ -1,6 +1,7 @@
 const cors = require("cors");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
+const authRouter = require("./routes/auth");
 require("dotenv").config();
 
 const express = require("express");
@@ -35,6 +36,7 @@ app.get("/session-test", (req, res) => {
   req.session.views = (req.session.views || 0) + 1;
   res.json({ views: req.session.views });
 });
+app.use("/auth", authRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: "not_found", message: "Route not found" });
