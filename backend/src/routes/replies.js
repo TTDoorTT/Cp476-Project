@@ -1,6 +1,7 @@
 const express = require("express");
 const pool = require("../db/pool");
 const requireAuth = require("../middleware/requireAuth");
+const { canManageResource } = require("../utils/authz");
 
 const router = express.Router();
 
@@ -85,6 +86,76 @@ router.post("/topics/:topicId/replies", requireAuth, async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ error: "server_error", message: err.message });
+  }
+});
+
+// #65 PUT /replies/:id (protected) - owner/admin only
+router.put("/replies/:id", requireAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: "validation_error", message: "invalid reply id" });
+    }
+
+    const { body } = req.body ?? {};
+    if (!body) {
+      return res.status(400).json({ error: "validation_error", message: "body is required" });
+    }
+    const cleanBody = String(body).trim();
+    if (cleanBody.length === 0) {
+      return res.status(400).json({ error: "validation_error", message: "body cannot be empty" });
+    }
+
+    const [rows] = await pool.query(
+      "SELECT id, user_id FROM replies WHERE id = ? AND deleted_at IS NULL LIMIT 1",
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "not_found", message: "reply not found" });
+    }
+
+    const ownerId = rows[0].user_id;
+    if (!canManageResource(req.session.user, ownerId)) {
+      return res.status(403).json({ error: "forbidden", message: "not allowed" });
+    }
+
+    await pool.query(
+      "UPDATE replies SET body = ?, updated_at = NOW() WHERE id = ?",
+      [cleanBody, id]
+    );
+
+    return res.json({ message: "ok" });
+  } catch (err) {
+    return res.status(500).json({ error: "server_error", message: err.message });
+  }
+});
+
+// #66 DELETE /replies/:id (protected) - soft delete, owner/admin only
+router.delete("/replies/:id", requireAuth, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ error: "validation_error", message: "invalid reply id" });
+    }
+
+    const [rows] = await pool.query(
+      "SELECT id, user_id FROM replies WHERE id = ? AND deleted_at IS NULL LIMIT 1",
+      [id]
+    );
+    if (rows.length === 0) {
+      return res.status(404).json({ error: "not_found", message: "reply not found" });
+    }
+
+    const ownerId = rows[0].user_id;
+    if (!canManageResource(req.session.user, ownerId)) {
+      return res.status(403).json({ error: "forbidden", message: "not allowed" });
+    }
+
+    await pool.query("UPDATE replies SET deleted_at = NOW() WHERE id = ?", [id]);
+
+    return res.json({ message: "ok" });
+  } catch (err) {
+    return res.status(500).json({ error: "server_error", message: err.message });
   }
 });
 
