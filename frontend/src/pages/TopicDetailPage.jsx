@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
-console.log("api keys:", Object.keys(api));
 import { useAuth } from "../auth/AuthContext";
 
 export default function TopicDetailPage() {
