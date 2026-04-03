@@ -11,26 +11,33 @@ export default function Header() {
   }
 
   return (
-    <header style={{ padding: 12, borderBottom: "1px solid #ddd", marginBottom: 16 }}>
-      <nav style={{ display: "flex", gap: 12, alignItems: "center" }}>
-        <Link to="/topics">Topics</Link>
-        <Link to="/topics/new">Create Topic</Link>
+    <header className="site-header">
+      <div className="container header-row">
+        <div className="brand">
+          <Link to="/topics">CP476 Forum</Link>
+        </div>
 
-        <div style={{ marginLeft: "auto", display: "flex", gap: 12, alignItems: "center" }}>
+        <nav className="nav">
+          <Link to="/topics">Topics</Link>
+
+          {user ? <Link to="/topics/new">Create Topic</Link> : null}
+
           {loading ? (
-            <span>Checking session…</span>
+            <span className="nav-status">Checking session…</span>
           ) : user ? (
             <>
-              <span>
-                Logged in as <b>{user.username}</b> ({user.role})
+              <span className="nav-status">
+                Logged in as {user.username} ({user.role})
               </span>
-              <button onClick={onLogout}>Logout</button>
+              <button type="button" className="btn primary" onClick={onLogout}>
+                Logout
+              </button>
             </>
           ) : (
             <Link to="/login">Login</Link>
           )}
-        </div>
-      </nav>
+        </nav>
+      </div>
     </header>
   );
 }
