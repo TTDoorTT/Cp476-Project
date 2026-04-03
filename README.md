@@ -2,10 +2,8 @@
 # Online Discussion Board / Forum
 
 ## Project Overview
-This project is a simplified online discussion board designed as a full-stack web application for CP476A – Internet Computing.  
-The application allows users to create discussion topics, post replies, and manage their own content while demonstrating a complete user workflow, relational database design, and basic security practices.
-
-The project emphasizes planning, clear requirements, teamwork, and accountability in addition to technical implementation.
+This project is a simplified online discussion board designed as a full-stack web application for **CP476A – Internet Computing**.  
+Users can register/login, create discussion topics, post replies, and manage their own content. The application demonstrates an end-to-end workflow against a relational database, CRUD for core objects, and basic security practices (validation + authorization + parameterized SQL).
 
 ---
 
@@ -16,148 +14,195 @@ The project emphasizes planning, clear requirements, teamwork, and accountabilit
 
 ---
 
-## Core Features
+## Core Features (Implemented)
 
-### Must Have (MVP)
-- User registration, login, and logout
-- View list of discussion topics
-- Create new discussion topics
-- View topic threads with replies
-- Post replies to topics
-- Edit or delete own topics and replies
-- Server-side input validation
-- Authorization checks (ownership-based permissions)
+### Authentication & Users
+- User registration
+- User login/logout (**session cookie auth**)
+- `GET /auth/me` to read current session user
+- User roles via `users.role` = `user | admin`
 
-### Should Have
-- User roles (User / Moderator / Admin)
-- Moderator ability to delete posts or lock topics
-- Pagination for topic lists
+### Topics (CRUD)
+- List topics
+- View topic detail
+- Create topic (auth required)
+- Edit topic (**owner/admin**)
+- Delete topic (**owner/admin**, **soft delete** via `deleted_at`)
 
-### Could Have
-- Tags or categories for topics
-- Simple keyword search
-- Upvotes or likes
+### Replies (CRUD)
+- List replies for a topic
+- Post reply (auth required)
+- Edit reply (**owner/admin**)
+- Delete reply (**owner/admin**, **soft delete** via `deleted_at`)
 
----
-
-## User Workflow
-1. User registers or logs in
-2. User views a list of discussion topics
-3. User creates a new topic or selects an existing one
-4. User posts replies within a topic
-5. User edits or deletes their own content
-6. Moderator/admin may manage posts or lock topics
-
-This workflow supports full CRUD functionality and demonstrates a complete end-to-end application flow.
+### Security & Validation
+- Server-side input validation (required fields, basic length checks)
+- Authorization enforcement (401 unauthenticated, 403 forbidden)
+- Parameterized SQL queries (prevents SQL injection)
+- React renders user content as plain text (no `dangerouslySetInnerHTML`)
 
 ---
 
-## Tech Stack (Planned)
-- **Frontend:** HTML, CSS, JavaScript
-- **Backend:** Node.js
-- **Database:** MySQL (relational database)
-- **Version Control:** GitHub
-- **Project Management:** GitHub Projects (Kanban)
+## Tech Stack (Final)
+- **Frontend:** React (Vite)
+- **Backend:** Node.js + Express
+- **Database:** MySQL 8 (Docker)
+- **Auth:** Express sessions (cookie-based)
+- **Project Management:** GitHub Issues + GitHub Projects (Kanban)
 
-*(Exact technologies may be finalized during development.)*
+---
+
+## Repo Structure
+- `/frontend` — React frontend (Vite)
+- `/frontend_m2_static` — archived Milestone 2 static HTML UI (kept for evidence/reference)
+- `/backend` — Express API server
+- `/sql` — schema and migrations
+- `/docs` — milestone artifacts (diagrams, reports, etc.)
 
 ---
 
 ## Data Model (High-Level)
 
 ### Users
-- id (PK, INT AUTO_INCREMENT)
-- username (VARCHAR, UNIQUE, NOT NULL)
-- email (VARCHAR, UNIQUE, NOT NULL)
-- password_hash (VARCHAR, NOT NULL)
-- created_at (DATETIME, NOT NULL default current)
-- deleted_at (DATETIME, NULL)
+- id (PK)
+- username (UNIQUE, NOT NULL)
+- email (UNIQUE, NOT NULL)
+- password_hash (NOT NULL)
+- role (ENUM('user','admin') NOT NULL default 'user')
+- created_at (default current timestamp)
+- deleted_at (nullable)
 
 ### Topics
 - id (PK)
-- user_id (FK → users.id, NOT NULL)
-- title (VARCHAR, NOT NULL)
-- body (TEXT, NOT NULL)
-- created_at (DATETIME, NOT NULL default current)
-- updated_at (DATETIME, NULL)
-- deleted_at (DATETIME, NULL)
+- user_id (FK → users.id)
+- title
+- body
+- created_at
+- updated_at
+- deleted_at (soft delete)
 
-### Posts (Replies)
+### Replies
 - id (PK)
-- topic_id (FK → topics.id, NOT NULL)
-- user_id (FK → users.id, NOT NULL)
-- body (TEXT, NOT NULL)
-- created_at (DATETIME, NOT NULL default current)
-- updated_at (DATETIME, NULL)
-- deleted_at (DATETIME, NULL)
+- topic_id (FK → topics.id)
+- user_id (FK → users.id)
+- body
+- created_at
+- updated_at
+- deleted_at (soft delete)
 
 ---
 
-## Security & Validation
-- Server-side validation for required fields and length limits
-- Password hashing (no plain-text storage)
-- Authorization checks for edit/delete actions
-- Parameterized queries / ORM to prevent SQL injection
-- Output escaping or sanitization to reduce XSS risk
+## Running Locally (Clean Machine Steps)
 
----
-## Project Management
-- GitHub Issues are used to track tasks
-- GitHub Projects (Kanban) board columns:
-  - Backlog
-  - Ready
-  - In Progress
-  - In Review
-  - Done
-- Tasks are assigned to team members and moved across columns as work progresses
-
-## Repo Structure
-- `/frontend` — UI
-- `/backend` — API server
-- `/sql` — schema and seed scripts
-- `/docs` — milestone documents (ER diagram, meeting logs, reports)
-
-## Getting Started (Milestone 2)
-
-### Database (Docker)
+### 1) Database (Docker)
 From the repo root:
 ```bash
 docker compose up -d
 ```
-Load the schema into MySQL:
+
+Load schema into MySQL:
 ```bash
 docker exec -i cp476_mysql mysql -ucp476 -pcp476pass cp476_forum < sql/schema.sql
 ```
+
 Verify tables:
 ```bash
 docker exec -it cp476_mysql mysql -ucp476 -pcp476pass -e "SHOW TABLES;" cp476_forum
 ```
-Expected tables: users, topics, replies
 
-### Backend (Node + Express)
+Expected tables: `users`, `topics`, `replies`
+
+> Note: A migration was added during M3:
+> - `sql/migrations/001_add_role_to_users.sql`
+
+---
+
+### 2) Backend (Node + Express)
 ```bash
 cd backend
 npm install
 cp .env.example .env
 npm run dev
 ```
+
 Health check:
 ```bash
 curl http://localhost:3000/health
 ```
+
 DB test:
 ```bash
 curl http://localhost:3000/db-test
 ```
 
-### Frontend
-Milestone 2 frontend is a multi-page HTML UI shell.
-Open using one of:
-- VSCode Live Preview / Live Server extension
-- Or open frontend/index.html in a browser
-Pages:
-- frontend/index.html
-- frontend/pages/topics.html
-- frontend/pages/topic-detail.html?id=1
-- frontend/pages/topic-create.html
-- frontend/pages/login.html
+---
+
+### 3) Frontend (React)
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Open:
+- http://localhost:5173
+
+---
+
+## API Endpoints (Core)
+
+### Auth
+- `POST /auth/register`
+- `POST /auth/login`
+- `POST /auth/logout`
+- `GET /auth/me`
+
+### Topics
+- `GET /topics`
+- `GET /topics/:id`
+- `POST /topics` (auth required)
+- `PUT /topics/:id` (owner/admin)
+- `DELETE /topics/:id` (owner/admin, soft delete)
+
+### Replies
+- `GET /topics/:topicId/replies`
+- `POST /topics/:topicId/replies` (auth required)
+- `PUT /replies/:id` (owner/admin)
+- `DELETE /replies/:id` (owner/admin, soft delete)
+
+---
+
+## User/Admin Setup (for Demo/Testing)
+To promote a user to admin:
+```bash
+curl -i -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin1","email":"admin1@test.com","password":"password123"}'
+
+docker exec -it cp476_mysql mysql -ucp476 -pcp476pass cp476_forum -e \
+"UPDATE users SET role='admin' WHERE username='admin1'; SELECT id, username, role FROM users;"
+```
+
+To add a normal user:
+```bash
+curl -i -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user2","email":"user2@test.com","password":"password123"}'
+```
+
+---
+
+## Project Management
+- GitHub Issues track tasks
+- GitHub Projects (Kanban) columns:
+  - Backlog
+  - Ready
+  - In Progress
+  - In Review
+  - Done
+
+---
+
+## Notes
+- Soft delete is implemented via `deleted_at`. List/detail endpoints filter `deleted_at IS NULL`.
+- Frontend conditionally renders edit/delete controls for owner/admin; backend is the source of truth.
