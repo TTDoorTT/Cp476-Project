@@ -35,7 +35,25 @@ npm run dev
 ## Test Accounts
 
 - **Normal User:** `lucas1 / password123`
+- add a normal user
+```bash
+curl -i -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user2","email":"user2@test.com","password":"password123"}'
+```
+
 - **Admin User (if enabled):** Promote via DB
+- add a normal user
+```bash
+curl -i -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"admin1","email":"admin1@test.com","password":"password123"}'
+
+docker exec -it cp476_mysql mysql -ucp476 -pcp476pass cp476_forum -e \
+"UPDATE users SET role='admin' WHERE username='admin1'; SELECT id, username, role FROM users;"
+```
+
+
 
 ```sql
 UPDATE users SET role='admin' WHERE username='lucas1';

@@ -10,7 +10,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <Header />
-      <main style={{ maxWidth: 980, margin: "0 auto", padding: 12 }}>
+      <main className="app-main">
         <Routes>
           <Route path="/" element={<Navigate to="/topics" replace />} />
           <Route path="/login" element={<LoginPage />} />
