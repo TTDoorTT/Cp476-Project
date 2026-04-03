@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth/AuthContext";
 
 export default function LoginPage() {
@@ -32,43 +32,70 @@ export default function LoginPage() {
 
   if (user) {
     return (
-      <div>
-        <h1>Login</h1>
-        <p>You are already logged in as <b>{user.username}</b>.</p>
-        <button onClick={() => navigate("/topics")}>Go to Topics</button>
-      </div>
+      <main className="container page-section auth-layout">
+        <section className="card">
+          <h1 className="page-title">Login</h1>
+          <p className="page-subtitle">
+            You are already logged in as {user.username}.
+          </p>
+
+          <div className="form-actions">
+            <Link className="btn primary" to="/topics">
+              Go to Topics
+            </Link>
+          </div>
+        </section>
+      </main>
     );
   }
 
   return (
-    <div style={{ maxWidth: 420 }}>
-      <h1>Login</h1>
-      <p>M3: session-based login (cookies).</p>
+    <main className="container page-section auth-layout">
+      <section className="card">
+        <h1 className="page-title">Login</h1>
+        <p className="page-subtitle">
+          Sign in with your username or email.
+        </p>
 
-      {err && <p style={{ color: "#b00020" }}>{err}</p>}
+        {err ? <p className="status error">{err}</p> : null}
 
-      <form onSubmit={onSubmit}>
-        <label>Username or Email</label>
-        <input
-          style={{ width: "100%", padding: 8, marginTop: 6, marginBottom: 12 }}
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-        />
+        <form onSubmit={onSubmit} className="form-grid" style={{ marginTop: 16 }}>
+          <div>
+            <label htmlFor="identifier">Username or Email</label>
+            <input
+              id="identifier"
+              className="input"
+              type="text"
+              value={identifier}
+              onChange={(e) => setIdentifier(e.target.value)}
+            />
+          </div>
 
-        <label>Password</label>
-        <input
-          type="password"
-          style={{ width: "100%", padding: 8, marginTop: 6, marginBottom: 12 }}
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+          <div>
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              className="input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-        <button type="submit">Login</button>
-      </form>
+          <div className="form-actions">
+            <button type="submit" className="btn primary">
+              Login
+            </button>
+            <Link className="btn" to="/topics">
+              Back to Topics
+            </Link>
+          </div>
+        </form>
 
-      <p style={{ marginTop: 12, fontSize: 12 }}>
-        Tip: use the user you registered (e.g. <code>lucas1 / password123</code>)
-      </p>
-    </div>
+        <p className="auth-note">
+          Register UI is not wired here yet. Login is fully connected to the backend.
+        </p>
+      </section>
+    </main>
   );
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 
@@ -9,38 +9,34 @@ export default function TopicDetailPage() {
 
   const [topic, setTopic] = useState(null);
   const [replies, setReplies] = useState([]);
-
   const [replyBody, setReplyBody] = useState("");
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
 
-  const { user } = useAuth();
-  const navigate = useNavigate();
-
-  // Topic edit state
   const [editingTopic, setEditingTopic] = useState(false);
   const [editTitle, setEditTitle] = useState("");
   const [editBody, setEditBody] = useState("");
 
-  // Reply edit state
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editingReplyBody, setEditingReplyBody] = useState("");
+
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
   const canManageTopic =
     user && topic && (user.role === "admin" || user.id === topic.author_id);
 
-  function canManageReply(r) {
-    return user && (user.role === "admin" || user.id === r.author_id);
+  function canManageReply(reply) {
+    return user && (user.role === "admin" || user.id === reply.author_id);
   }
 
   async function loadAll() {
     setErr("");
     setInfo("");
+
     try {
       const t = await api.getTopic(topicId);
       setTopic(t.topic);
-
-      // Initialize edit fields from fresh data
       setEditTitle(t.topic.title);
       setEditBody(t.topic.body);
 
@@ -57,10 +53,8 @@ export default function TopicDetailPage() {
       return;
     }
     loadAll();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topicId]);
 
-  // --- Topic handlers ---
   function startEditTopic() {
     setEditingTopic(true);
     setErr("");
@@ -78,6 +72,7 @@ export default function TopicDetailPage() {
   async function onSaveTopic() {
     setErr("");
     setInfo("");
+
     const t = editTitle.trim();
     const b = editBody.trim();
 
@@ -98,8 +93,10 @@ export default function TopicDetailPage() {
 
   async function onDeleteTopic() {
     if (!confirm("Delete this topic?")) return;
+
     setErr("");
     setInfo("");
+
     try {
       await api.deleteTopic(topicId);
       navigate("/topics");
@@ -108,10 +105,9 @@ export default function TopicDetailPage() {
     }
   }
 
-  // --- Reply handlers ---
-  function startEditReply(r) {
-    setEditingReplyId(r.id);
-    setEditingReplyBody(r.body);
+  function startEditReply(reply) {
+    setEditingReplyId(reply.id);
+    setEditingReplyBody(reply.body);
     setErr("");
     setInfo("");
   }
@@ -126,6 +122,7 @@ export default function TopicDetailPage() {
   async function saveReplyEdit() {
     setErr("");
     setInfo("");
+
     const b = editingReplyBody.trim();
     if (!b) {
       setErr("Reply cannot be empty.");
@@ -145,8 +142,10 @@ export default function TopicDetailPage() {
 
   async function deleteReply(replyId) {
     if (!confirm("Delete this reply?")) return;
+
     setErr("");
     setInfo("");
+
     try {
       await api.deleteReply(replyId);
       setInfo("Reply deleted.");
@@ -156,7 +155,6 @@ export default function TopicDetailPage() {
     }
   }
 
-  // --- Create reply ---
   async function onSubmitReply(e) {
     e.preventDefault();
     setErr("");
@@ -178,135 +176,224 @@ export default function TopicDetailPage() {
     }
   }
 
-  // --- Render states ---
   if (err && !topic) {
     return (
-      <div>
-        <h1>Topic Detail</h1>
-        <p style={{ color: "#b00020" }}>{err}</p>
-      </div>
+      <main className="container page-section">
+        <section className="card">
+          <Link className="back-link" to="/topics">
+            ← Back to Topics
+          </Link>
+          <h1 className="page-title" style={{ marginTop: 12 }}>
+            Topic Detail
+          </h1>
+          <p className="status error">{err}</p>
+        </section>
+      </main>
     );
   }
 
   if (!topic) {
     return (
-      <div>
-        <h1>Topic Detail</h1>
-        <p>Loading...</p>
-      </div>
+      <main className="container page-section">
+        <section className="card">
+          <Link className="back-link" to="/topics">
+            ← Back to Topics
+          </Link>
+          <h1 className="page-title" style={{ marginTop: 12 }}>
+            Topic Detail
+          </h1>
+          <p>Loading...</p>
+        </section>
+      </main>
     );
   }
 
   return (
-    <div>
-      {/* Topic header */}
-      {!editingTopic ? (
-        <>
-          <h1>{topic.title}</h1>
-          <p>
-            <small>
-              by {topic.author_username} {topic.updated_at ? "(edited)" : ""}
-            </small>
-          </p>
-          <p>{topic.body}</p>
+    <main className="container page-section">
+      <div className="row page-head" style={{ marginBottom: 14 }}>
+        <Link className="back-link" to="/topics">
+          ← Back to Topics
+        </Link>
 
-          {canManageTopic && (
-            <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
-              <button onClick={startEditTopic}>Edit Topic</button>
-              <button onClick={onDeleteTopic}>Delete Topic</button>
-            </div>
-          )}
-        </>
-      ) : (
-        <>
-          <h1>Edit Topic</h1>
-          <label>Title</label>
-          <input
-            style={{ width: "100%", padding: 8, marginTop: 6, marginBottom: 12 }}
-            value={editTitle}
-            onChange={(e) => setEditTitle(e.target.value)}
-            maxLength={150}
-          />
+        {user ? (
+          <Link className="btn" to="/topics/new">
+            Create Topic
+          </Link>
+        ) : (
+          <Link className="btn" to="/login">
+            Login
+          </Link>
+        )}
+      </div>
 
-          <label>Body</label>
-          <textarea
-            rows={6}
-            style={{ width: "100%", padding: 8, marginTop: 6, marginBottom: 12 }}
-            value={editBody}
-            onChange={(e) => setEditBody(e.target.value)}
-          />
+      <section className="card">
+        {!editingTopic ? (
+          <>
+            <h1 className="page-title">{topic.title}</h1>
+            <p className="topic-meta">
+              by {topic.author_username}
+              {topic.updated_at ? " (edited)" : ""}
+            </p>
+            <p className="topic-body">{topic.body}</p>
 
-          <div style={{ display: "flex", gap: 8 }}>
-            <button onClick={onSaveTopic}>Save</button>
-            <button onClick={cancelEditTopic}>Cancel</button>
-          </div>
-        </>
-      )}
+            {canManageTopic ? (
+              <div className="topic-actions">
+                <button type="button" className="btn" onClick={startEditTopic}>
+                  Edit Topic
+                </button>
+                <button
+                  type="button"
+                  className="btn danger"
+                  onClick={onDeleteTopic}
+                >
+                  Delete Topic
+                </button>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <>
+            <h1 className="page-title">Edit Topic</h1>
 
-      {/* Status messages */}
-      <h2 style={{ marginTop: 24 }}>Replies</h2>
-      {err && <p style={{ color: "#b00020" }}>{err}</p>}
-      {info && <p style={{ color: "green" }}>{info}</p>}
-
-      {/* Replies list */}
-      {replies.length === 0 ? (
-        <p>No replies yet.</p>
-      ) : (
-        <ul style={{ paddingLeft: 18 }}>
-          {replies.map((r) => (
-            <li key={r.id} style={{ marginBottom: 12 }}>
+            <div className="form-grid" style={{ marginTop: 16 }}>
               <div>
-                <b>{r.author_username}</b>
-                {r.updated_at ? <small> (edited)</small> : null}
+                <label htmlFor="edit-title">Title</label>
+                <input
+                  id="edit-title"
+                  className="input"
+                  value={editTitle}
+                  onChange={(e) => setEditTitle(e.target.value)}
+                  maxLength={150}
+                />
               </div>
 
-              {editingReplyId === r.id ? (
-                <>
-                  <textarea
-                    rows={3}
-                    style={{ width: "100%", marginTop: 6 }}
-                    value={editingReplyBody}
-                    onChange={(e) => setEditingReplyBody(e.target.value)}
-                  />
-                  <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                    <button onClick={saveReplyEdit}>Save</button>
-                    <button onClick={cancelEditReply}>Cancel</button>
-                  </div>
-                </>
-              ) : (
-                <>
-                  <div style={{ marginTop: 4 }}>{r.body}</div>
+              <div>
+                <label htmlFor="edit-body">Body</label>
+                <textarea
+                  id="edit-body"
+                  className="input"
+                  rows={8}
+                  value={editBody}
+                  onChange={(e) => setEditBody(e.target.value)}
+                />
+              </div>
 
-                  {canManageReply(r) && (
-                    <div style={{ display: "flex", gap: 8, marginTop: 6 }}>
-                      <button onClick={() => startEditReply(r)}>Edit</button>
-                      <button onClick={() => deleteReply(r.id)}>Delete</button>
+              <div className="form-actions">
+                <button type="button" className="btn primary" onClick={onSaveTopic}>
+                  Save
+                </button>
+                <button type="button" className="btn" onClick={cancelEditTopic}>
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+
+        {err ? <p className="status error">{err}</p> : null}
+        {info ? <p className="status success">{info}</p> : null}
+      </section>
+
+      <section className="card">
+        <h2 className="page-title" style={{ fontSize: "1.5rem" }}>
+          Replies
+        </h2>
+
+        {replies.length === 0 ? (
+          <p className="empty-state">No replies yet.</p>
+        ) : (
+          <div className="stack" style={{ marginTop: 16 }}>
+            {replies.map((reply) => (
+              <article key={reply.id} className="card reply-item">
+                <p className="topic-meta">
+                  <strong>{reply.author_username}</strong>
+                  {reply.updated_at ? " (edited)" : ""}
+                </p>
+
+                {editingReplyId === reply.id ? (
+                  <>
+                    <textarea
+                      className="input"
+                      rows={4}
+                      value={editingReplyBody}
+                      onChange={(e) => setEditingReplyBody(e.target.value)}
+                    />
+
+                    <div className="reply-actions">
+                      <button
+                        type="button"
+                        className="btn primary"
+                        onClick={saveReplyEdit}
+                      >
+                        Save
+                      </button>
+                      <button
+                        type="button"
+                        className="btn"
+                        onClick={cancelEditReply}
+                      >
+                        Cancel
+                      </button>
                     </div>
-                  )}
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      )}
+                  </>
+                ) : (
+                  <>
+                    <p className="reply-body">{reply.body}</p>
 
-      {/* Create reply */}
-      <h3 style={{ marginTop: 24 }}>Post a Reply</h3>
-      <form onSubmit={onSubmitReply}>
-        <textarea
-          rows={4}
-          style={{ width: "100%" }}
-          value={replyBody}
-          onChange={(e) => setReplyBody(e.target.value)}
-        />
-        <button type="submit" style={{ marginTop: 8 }}>
-          Submit Reply
-        </button>
-      </form>
+                    {canManageReply(reply) ? (
+                      <div className="reply-actions">
+                        <button
+                          type="button"
+                          className="btn"
+                          onClick={() => startEditReply(reply)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          type="button"
+                          className="btn danger"
+                          onClick={() => deleteReply(reply.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    ) : null}
+                  </>
+                )}
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
-      <p style={{ marginTop: 12 }}>
-        Note: Posting/editing/deleting requires being logged in. Owner/admin rules are enforced by the backend.
-      </p>
-    </div>
+      <section className="card">
+        <h3 className="page-title" style={{ fontSize: "1.25rem" }}>
+          Post a Reply
+        </h3>
+
+        <form onSubmit={onSubmitReply} className="form-grid" style={{ marginTop: 16 }}>
+          <div>
+            <label htmlFor="reply-body">Reply</label>
+            <textarea
+              id="reply-body"
+              className="input"
+              rows={5}
+              value={replyBody}
+              onChange={(e) => setReplyBody(e.target.value)}
+            />
+          </div>
+
+          <div className="form-actions">
+            <button type="submit" className="btn primary">
+              Submit Reply
+            </button>
+          </div>
+        </form>
+
+        <p className="auth-note">
+          Posting, editing, and deleting are enforced by the backend owner/admin rules.
+        </p>
+      </section>
+    </main>
   );
 }
