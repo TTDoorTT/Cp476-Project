@@ -3,13 +3,25 @@ import { Link } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 
+const PAGE_SIZE = 5;
+
 export default function TopicsPage() {
   const [topics, setTopics] = useState([]);
   const [err, setErr] = useState("");
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: PAGE_SIZE,
+    total: 0,
+    totalPages: 1,
+    hasPrev: false,
+    hasNext: false,
+  });
 
   const [search, setSearch] = useState("");
+  const [appliedSearch, setAppliedSearch] = useState("");
   const [ownershipFilter, setOwnershipFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
+  const [page, setPage] = useState(1);
 
   const { user } = useAuth();
 
@@ -17,10 +29,26 @@ export default function TopicsPage() {
     let alive = true;
 
     api
-      .listTopics()
+      .listTopics({
+        page,
+        limit: PAGE_SIZE,
+        q: appliedSearch,
+        sort: sortBy,
+        scope: ownershipFilter,
+      })
       .then((data) => {
         if (!alive) return;
         setTopics(data.topics || []);
+        setPagination(
+          data.pagination || {
+            page: 1,
+            limit: PAGE_SIZE,
+            total: 0,
+            totalPages: 1,
+            hasPrev: false,
+            hasNext: false,
+          },
+        );
       })
       .catch((e) => {
         if (!alive) return;
@@ -30,7 +58,35 @@ export default function TopicsPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [page, appliedSearch, ownershipFilter, sortBy]);
+
+  function onApplySearch(e) {
+    e.preventDefault();
+    setErr("");
+    setPage(1);
+    setAppliedSearch(search.trim());
+  }
+
+  function onChangeView(e) {
+    setOwnershipFilter(e.target.value);
+    setPage(1);
+    setErr("");
+  }
+
+  function onChangeSort(e) {
+    setSortBy(e.target.value);
+    setPage(1);
+    setErr("");
+  }
+
+  function resetControls() {
+    setSearch("");
+    setAppliedSearch("");
+    setOwnershipFilter("all");
+    setSortBy("newest");
+    setPage(1);
+    setErr("");
+  }
 
   const filteredTopics = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -99,7 +155,7 @@ export default function TopicsPage() {
 
         {err ? <p className="status error">{err}</p> : null}
 
-        <div className="topics-toolbar">
+        <form className="topics-toolbar" onSubmit={onApplySearch}>
           <div className="topics-toolbar-group topics-search-group">
             <label htmlFor="topic-search">Search</label>
             <input
@@ -118,7 +174,7 @@ export default function TopicsPage() {
               id="ownership-filter"
               className="input"
               value={ownershipFilter}
-              onChange={(e) => setOwnershipFilter(e.target.value)}
+              onChange={onChangeView}
               disabled={!user}
             >
               <option value="all">All Topics</option>
@@ -132,7 +188,7 @@ export default function TopicsPage() {
               id="sort-by"
               className="input"
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
+              onChange={onChangeSort}
             >
               <option value="newest">Newest First</option>
               <option value="oldest">Oldest First</option>
@@ -140,22 +196,34 @@ export default function TopicsPage() {
               <option value="title-desc">Title Z-A</option>
             </select>
           </div>
-        </div>
+
+          <div className="topics-toolbar-group topics-toolbar-submit">
+            <label>&nbsp;</label>
+            <div className="topics-toolbar-actions">
+              <button type="submit" className="btn primary">
+                Apply
+              </button>
+
+              {(search ||
+                appliedSearch ||
+                ownershipFilter !== "all" ||
+                sortBy !== "newest") && (
+                <button type="button" className="btn" onClick={resetControls}>
+                  Reset Filters
+                </button>
+              )}
+            </div>
+          </div>
+        </form>
 
         <div className="topics-toolbar-footer">
           <p className="small">
-            Showing {filteredTopics.length} of {topics.length} topic
-            {topics.length === 1 ? "" : "s"}
+            Showing page {pagination.page} of {pagination.totalPages} ·{" "}
+            {pagination.total} total topic{pagination.total === 1 ? "" : "s"}
           </p>
-
-          {(search || ownershipFilter !== "all" || sortBy !== "newest") && (
-            <button type="button" className="btn" onClick={resetControls}>
-              Reset Filters
-            </button>
-          )}
         </div>
 
-        {filteredTopics.length === 0 ? (
+        {topics.length === 0 ? (
           <div className="empty-state-block">
             <p className="empty-state">No topics match your current filters.</p>
             <p className="small">
@@ -164,23 +232,60 @@ export default function TopicsPage() {
           </div>
         ) : (
           <div className="stack" style={{ marginTop: 16 }}>
-            {filteredTopics.map((t) => (
-              <article key={t.id} className="card topic-card">
-                <h2 className="topic-card-title">{t.title}</h2>
+            {topics.map((t) => {
+              const preview = String(t.body || "");
+              const shortPreview =
+                preview.length > 180 ? `${preview.slice(0, 180)}...` : preview;
 
-                <p className="topic-meta">
-                  by <strong>{t.author_username}</strong>
-                </p>
+              return (
+                <article key={t.id} className="card topic-card">
+                  <h2 className="topic-card-title">{t.title}</h2>
 
-                <div className="form-actions">
-                  <Link className="btn" to={`/topics/${t.id}`}>
-                    Open Topic
-                  </Link>
-                </div>
-              </article>
-            ))}
+                  <p className="topic-meta">
+                    by <strong>{t.author_username}</strong>
+                  </p>
+
+                  {shortPreview ? (
+                    <div className="topic-preview">{shortPreview}</div>
+                  ) : null}
+
+                  <div className="form-actions">
+                    <Link className="btn" to={`/topics/${t.id}`}>
+                      Open Topic
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
           </div>
         )}
+
+        <div className="pagination-bar">
+          <button
+            type="button"
+            className="btn"
+            disabled={!pagination.hasPrev}
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+          >
+            ← Previous
+          </button>
+
+          <div className="pagination-status">
+            Page <strong>{pagination.page}</strong> of{" "}
+            <strong>{pagination.totalPages}</strong>
+          </div>
+
+          <button
+            type="button"
+            className="btn"
+            disabled={!pagination.hasNext}
+            onClick={() =>
+              setPage((p) => Math.min(pagination.totalPages, p + 1))
+            }
+          >
+            Next →
+          </button>
+        </div>
       </section>
     </main>
   );

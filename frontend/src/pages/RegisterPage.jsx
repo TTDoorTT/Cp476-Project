@@ -50,13 +50,8 @@ export default function RegisterPage() {
 
     try {
       setSubmitting(true);
-
       await api.register(cleanUsername, cleanEmail, pw);
-
-      // backend register creates the user but does not create the session,
-      // so log in immediately afterward
       await login(cleanEmail, pw);
-
       navigate("/topics");
     } catch (e2) {
       setErr(e2.message || "Registration failed");
@@ -101,6 +96,7 @@ export default function RegisterPage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
@@ -112,6 +108,7 @@ export default function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
@@ -123,6 +120,7 @@ export default function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
@@ -134,6 +132,7 @@ export default function RegisterPage() {
               type="password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
