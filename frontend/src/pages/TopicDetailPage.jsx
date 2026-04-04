@@ -37,18 +37,6 @@ export default function TopicDetailPage() {
     return user && (user.role === "admin" || user.id === reply.author_id);
   }
 
-  function confirmDeleteTopic() {
-    return window.confirm(
-      [
-        "Delete this topic?",
-        "",
-        "This will soft delete the topic.",
-        "It will disappear from normal users and topic lists.",
-        "An admin can restore it later from the deleted topics view.",
-      ].join("\n"),
-    );
-  }
-
   function confirmDeleteReply() {
     return window.confirm(
       [
@@ -129,6 +117,23 @@ export default function TopicDetailPage() {
     }
   }
 
+  async function onDeleteTopic() {
+    if (!confirmDeleteTopic()) return;
+
+    setErr("");
+    setInfo("");
+
+    try {
+      setDeletingTopic(true);
+      await api.deleteTopic(topicId);
+      navigate("/topics");
+    } catch (e) {
+      setErr(e.message || "Failed to delete topic");
+    } finally {
+      setDeletingTopic(false);
+    }
+  }
+
   function confirmDeleteTopic() {
     return window.confirm(
       [
@@ -191,7 +196,7 @@ export default function TopicDetailPage() {
     }
   }
 
-    async function deleteReply(replyId) {
+  async function deleteReply(replyId) {
     if (!confirmDeleteReply()) return;
 
     setErr("");
