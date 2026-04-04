@@ -21,6 +21,13 @@ export default function Header() {
           <Link to="/topics">Topics</Link>
           {user ? <Link to="/topics/new">Create Topic</Link> : null}
 
+          {user?.role === "admin" ? (
+            <>
+              <Link to="/admin/deleted-topics">Deleted Topics</Link>
+              <Link to="/admin/users">Users</Link>
+            </>
+          ) : null}
+
           {loading ? (
             <span className="nav-status">Checking session…</span>
           ) : user ? (
