@@ -23,6 +23,7 @@ export default function Header() {
 
           {user?.role === "admin" ? (
             <>
+              <Link to="/admin">Admin</Link>
               <Link to="/admin/deleted-topics">Deleted Topics</Link>
               <Link to="/admin/users">Users</Link>
             </>
