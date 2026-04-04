@@ -7,27 +7,40 @@ export default function AdminDeletedTopicsPage() {
   const { user, loading } = useAuth();
   const [topics, setTopics] = useState([]);
   const [err, setErr] = useState("");
+  const [info, setInfo] = useState("");
+  const [restoringId, setRestoringId] = useState(null);
+
+  async function loadDeletedTopics() {
+    setErr("");
+
+    try {
+      const data = await api.listDeletedTopics();
+      setTopics(data.topics || []);
+    } catch (e) {
+      setErr(e.message || "Failed to load deleted topics");
+    }
+  }
 
   useEffect(() => {
     if (!user || user.role !== "admin") return;
-
-    let alive = true;
-
-    api
-      .listDeletedTopics()
-      .then((data) => {
-        if (!alive) return;
-        setTopics(data.topics || []);
-      })
-      .catch((e) => {
-        if (!alive) return;
-        setErr(e.message || "Failed to load deleted topics");
-      });
-
-    return () => {
-      alive = false;
-    };
+    loadDeletedTopics();
   }, [user]);
+
+  async function onRestore(topicId) {
+    setErr("");
+    setInfo("");
+
+    try {
+      setRestoringId(topicId);
+      await api.restoreTopicAdmin(topicId);
+      setInfo(`Topic #${topicId} restored.`);
+      await loadDeletedTopics();
+    } catch (e) {
+      setErr(e.message || "Failed to restore topic");
+    } finally {
+      setRestoringId(null);
+    }
+  }
 
   if (loading) {
     return (
@@ -94,6 +107,7 @@ export default function AdminDeletedTopicsPage() {
         </div>
 
         {err ? <p className="status error">{err}</p> : null}
+        {info ? <p className="status success">{info}</p> : null}
 
         {topics.length === 0 ? (
           <p className="empty-state">No deleted topics found.</p>
@@ -127,6 +141,17 @@ export default function AdminDeletedTopicsPage() {
                   {topic.body?.length > 280
                     ? `${topic.body.slice(0, 280)}...`
                     : topic.body}
+                </div>
+
+                <div className="form-actions">
+                  <button
+                    type="button"
+                    className="btn primary"
+                    disabled={restoringId === topic.id}
+                    onClick={() => onRestore(topic.id)}
+                  >
+                    {restoringId === topic.id ? "Restoring..." : "Restore"}
+                  </button>
                 </div>
               </article>
             ))}

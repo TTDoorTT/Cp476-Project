@@ -85,5 +85,10 @@ export const api = {
   // Admin
   listDeletedTopics: () => apiFetch("/admin/deleted-topics", { method: "GET" }),
 
+  restoreTopicAdmin: (id) =>
+    apiFetch(`/admin/topics/${id}/restore`, {
+      method: "POST",
+    }),
+
   listUsersAdmin: () => apiFetch("/admin/users", { method: "GET" }),
 };
