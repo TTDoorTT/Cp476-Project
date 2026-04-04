@@ -12,6 +12,7 @@ export default function TopicDetailPage() {
   const [replyBody, setReplyBody] = useState("");
   const [err, setErr] = useState("");
   const [info, setInfo] = useState("");
+  const [pageLoading, setPageLoading] = useState(true);
 
   const [editingTopic, setEditingTopic] = useState(false);
   const [editTitle, setEditTitle] = useState("");
@@ -19,6 +20,12 @@ export default function TopicDetailPage() {
 
   const [editingReplyId, setEditingReplyId] = useState(null);
   const [editingReplyBody, setEditingReplyBody] = useState("");
+
+  const [savingTopic, setSavingTopic] = useState(false);
+  const [deletingTopic, setDeletingTopic] = useState(false);
+  const [postingReply, setPostingReply] = useState(false);
+  const [savingReplyId, setSavingReplyId] = useState(null);
+  const [deletingReplyId, setDeletingReplyId] = useState(null);
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -32,9 +39,10 @@ export default function TopicDetailPage() {
 
   async function loadAll() {
     setErr("");
-    setInfo("");
 
     try {
+      setPageLoading(true);
+
       const t = await api.getTopic(topicId);
       setTopic(t.topic);
       setEditTitle(t.topic.title);
@@ -43,13 +51,16 @@ export default function TopicDetailPage() {
       const r = await api.listReplies(topicId);
       setReplies(r.replies || []);
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message || "Failed to load topic");
+    } finally {
+      setPageLoading(false);
     }
   }
 
   useEffect(() => {
     if (!Number.isInteger(topicId) || topicId <= 0) {
       setErr("Invalid topic id");
+      setPageLoading(false);
       return;
     }
     loadAll();
@@ -82,12 +93,15 @@ export default function TopicDetailPage() {
     }
 
     try {
+      setSavingTopic(true);
       await api.updateTopic(topicId, t, b);
       setEditingTopic(false);
       setInfo("Topic updated.");
       await loadAll();
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message || "Failed to update topic");
+    } finally {
+      setSavingTopic(false);
     }
   }
 
@@ -98,10 +112,12 @@ export default function TopicDetailPage() {
     setInfo("");
 
     try {
+      setDeletingTopic(true);
       await api.deleteTopic(topicId);
       navigate("/topics");
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message || "Failed to delete topic");
+      setDeletingTopic(false);
     }
   }
 
@@ -130,13 +146,16 @@ export default function TopicDetailPage() {
     }
 
     try {
+      setSavingReplyId(editingReplyId);
       await api.updateReply(editingReplyId, b);
       setEditingReplyId(null);
       setEditingReplyBody("");
       setInfo("Reply updated.");
       await loadAll();
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message || "Failed to update reply");
+    } finally {
+      setSavingReplyId(null);
     }
   }
 
@@ -147,11 +166,14 @@ export default function TopicDetailPage() {
     setInfo("");
 
     try {
+      setDeletingReplyId(replyId);
       await api.deleteReply(replyId);
       setInfo("Reply deleted.");
       await loadAll();
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message || "Failed to delete reply");
+    } finally {
+      setDeletingReplyId(null);
     }
   }
 
@@ -167,25 +189,42 @@ export default function TopicDetailPage() {
     }
 
     try {
+      setPostingReply(true);
       await api.createReply(topicId, text);
       setReplyBody("");
       setInfo("Reply posted.");
       await loadAll();
     } catch (e) {
-      setErr(e.message);
+      setErr(e.message || "Failed to post reply");
+    } finally {
+      setPostingReply(false);
     }
+  }
+
+  if (pageLoading) {
+    return (
+      <main className="container page-section">
+        <section className="card">
+          <p className="status info">Loading topic...</p>
+        </section>
+      </main>
+    );
   }
 
   if (err && !topic) {
     return (
       <main className="container page-section">
         <section className="card">
-          <Link className="back-link" to="/topics">
-            ← Back to Topics
-          </Link>
+          <div className="form-actions">
+            <Link className="btn" to="/topics">
+              ← Back to Topics
+            </Link>
+          </div>
+
           <h1 className="page-title" style={{ marginTop: 12 }}>
             Topic Detail
           </h1>
+
           <p className="status error">{err}</p>
         </section>
       </main>
@@ -196,13 +235,7 @@ export default function TopicDetailPage() {
     return (
       <main className="container page-section">
         <section className="card">
-          <Link className="back-link" to="/topics">
-            ← Back to Topics
-          </Link>
-          <h1 className="page-title" style={{ marginTop: 12 }}>
-            Topic Detail
-          </h1>
-          <p>Loading...</p>
+          <p className="status info">Loading topic...</p>
         </section>
       </main>
     );
@@ -210,60 +243,73 @@ export default function TopicDetailPage() {
 
   return (
     <main className="container page-section">
-      <div className="row page-head" style={{ marginBottom: 14 }}>
-        <Link className="back-link" to="/topics">
-          ← Back to Topics
-        </Link>
-
-        {user ? (
-          <Link className="btn" to="/topics/new">
-            Create Topic
-          </Link>
-        ) : (
-          <Link className="btn" to="/login">
-            Login
-          </Link>
-        )}
-      </div>
-
       <section className="card">
+        <div className="form-actions">
+          <Link className="btn" to="/topics">
+            ← Back to Topics
+          </Link>
+          {user ? (
+            <Link className="btn primary" to="/topics/new">
+              Create Topic
+            </Link>
+          ) : (
+            <Link className="btn" to="/login">
+              Login
+            </Link>
+          )}
+        </div>
+
         {!editingTopic ? (
           <>
-            <h1 className="page-title">{topic.title}</h1>
+            <h1 className="page-title" style={{ marginTop: 12 }}>
+              {topic.title}
+            </h1>
+
             <p className="topic-meta">
-              by {topic.author_username}
-              {topic.updated_at ? " (edited)" : ""}
+              by <strong>{topic.author_username}</strong>{" "}
+              {topic.updated_at ? "(edited)" : ""}
             </p>
-            <p className="topic-body">{topic.body}</p>
+
+            <div className="topic-body">{topic.body}</div>
 
             {canManageTopic ? (
               <div className="topic-actions">
-                <button type="button" className="btn" onClick={startEditTopic}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={startEditTopic}
+                  disabled={deletingTopic}
+                >
                   Edit Topic
                 </button>
                 <button
                   type="button"
                   className="btn danger"
                   onClick={onDeleteTopic}
+                  disabled={deletingTopic}
                 >
-                  Delete Topic
+                  {deletingTopic ? "Deleting..." : "Delete Topic"}
                 </button>
               </div>
             ) : null}
           </>
         ) : (
           <>
-            <h1 className="page-title">Edit Topic</h1>
+            <h1 className="page-title" style={{ marginTop: 12 }}>
+              Edit Topic
+            </h1>
 
-            <div className="form-grid" style={{ marginTop: 16 }}>
+            <form className="form-grid" style={{ marginTop: 16 }}>
               <div>
                 <label htmlFor="edit-title">Title</label>
                 <input
                   id="edit-title"
                   className="input"
+                  type="text"
                   value={editTitle}
                   onChange={(e) => setEditTitle(e.target.value)}
                   maxLength={150}
+                  disabled={savingTopic}
                 />
               </div>
 
@@ -275,18 +321,29 @@ export default function TopicDetailPage() {
                   rows={8}
                   value={editBody}
                   onChange={(e) => setEditBody(e.target.value)}
+                  disabled={savingTopic}
                 />
               </div>
 
               <div className="form-actions">
-                <button type="button" className="btn primary" onClick={onSaveTopic}>
-                  Save
+                <button
+                  type="button"
+                  className="btn primary"
+                  onClick={onSaveTopic}
+                  disabled={savingTopic}
+                >
+                  {savingTopic ? "Saving..." : "Save"}
                 </button>
-                <button type="button" className="btn" onClick={cancelEditTopic}>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={cancelEditTopic}
+                  disabled={savingTopic}
+                >
                   Cancel
                 </button>
               </div>
-            </div>
+            </form>
           </>
         )}
 
@@ -302,21 +359,23 @@ export default function TopicDetailPage() {
         {replies.length === 0 ? (
           <p className="empty-state">No replies yet.</p>
         ) : (
-          <div className="stack" style={{ marginTop: 16 }}>
+          <div className="stack" style={{ marginTop: 14 }}>
             {replies.map((reply) => (
               <article key={reply.id} className="card reply-item">
                 <p className="topic-meta">
-                  <strong>{reply.author_username}</strong>
-                  {reply.updated_at ? " (edited)" : ""}
+                  <strong>{reply.author_username}</strong>{" "}
+                  {reply.updated_at ? "(edited)" : ""}
                 </p>
 
                 {editingReplyId === reply.id ? (
                   <>
                     <textarea
                       className="input"
-                      rows={4}
+                      rows={5}
                       value={editingReplyBody}
                       onChange={(e) => setEditingReplyBody(e.target.value)}
+                      disabled={savingReplyId === reply.id}
+                      style={{ marginTop: 12 }}
                     />
 
                     <div className="reply-actions">
@@ -324,13 +383,15 @@ export default function TopicDetailPage() {
                         type="button"
                         className="btn primary"
                         onClick={saveReplyEdit}
+                        disabled={savingReplyId === reply.id}
                       >
-                        Save
+                        {savingReplyId === reply.id ? "Saving..." : "Save"}
                       </button>
                       <button
                         type="button"
                         className="btn"
                         onClick={cancelEditReply}
+                        disabled={savingReplyId === reply.id}
                       >
                         Cancel
                       </button>
@@ -338,7 +399,7 @@ export default function TopicDetailPage() {
                   </>
                 ) : (
                   <>
-                    <p className="reply-body">{reply.body}</p>
+                    <div className="reply-body">{reply.body}</div>
 
                     {canManageReply(reply) ? (
                       <div className="reply-actions">
@@ -346,6 +407,7 @@ export default function TopicDetailPage() {
                           type="button"
                           className="btn"
                           onClick={() => startEditReply(reply)}
+                          disabled={deletingReplyId === reply.id}
                         >
                           Edit
                         </button>
@@ -353,8 +415,11 @@ export default function TopicDetailPage() {
                           type="button"
                           className="btn danger"
                           onClick={() => deleteReply(reply.id)}
+                          disabled={deletingReplyId === reply.id}
                         >
-                          Delete
+                          {deletingReplyId === reply.id
+                            ? "Deleting..."
+                            : "Delete"}
                         </button>
                       </div>
                     ) : null}
@@ -367,7 +432,7 @@ export default function TopicDetailPage() {
       </section>
 
       <section className="card">
-        <h3 className="page-title" style={{ fontSize: "1.25rem" }}>
+        <h3 className="page-title" style={{ fontSize: "1.3rem" }}>
           Post a Reply
         </h3>
 
@@ -377,22 +442,19 @@ export default function TopicDetailPage() {
             <textarea
               id="reply-body"
               className="input"
-              rows={5}
+              rows={6}
               value={replyBody}
               onChange={(e) => setReplyBody(e.target.value)}
+              disabled={postingReply}
             />
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn primary">
-              Submit Reply
+            <button type="submit" className="btn primary" disabled={postingReply}>
+              {postingReply ? "Posting..." : "Submit Reply"}
             </button>
           </div>
         </form>
-
-        <p className="auth-note">
-          Posting, editing, and deleting are enforced by the backend owner/admin rules.
-        </p>
       </section>
     </main>
   );

@@ -10,12 +10,11 @@ export default function CreateTopicPage() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [err, setErr] = useState("");
-  const [info, setInfo] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(e) {
     e.preventDefault();
     setErr("");
-    setInfo("");
 
     const t = title.trim();
     const b = body.trim();
@@ -26,11 +25,13 @@ export default function CreateTopicPage() {
     }
 
     try {
+      setSubmitting(true);
       const created = await api.createTopic(t, b);
-      setInfo("Topic created.");
       navigate(`/topics/${created.id}`);
     } catch (e2) {
       setErr(e2.message || "Failed to create topic");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -38,7 +39,7 @@ export default function CreateTopicPage() {
     return (
       <main className="container page-section">
         <section className="card">
-          <p>Checking session…</p>
+          <p className="status info">Checking session...</p>
         </section>
       </main>
     );
@@ -47,16 +48,19 @@ export default function CreateTopicPage() {
   if (!user) {
     return (
       <main className="container page-section">
-        <section className="card auth-layout">
+        <section className="card">
           <h1 className="page-title">Create Topic</h1>
-          <p className="page-subtitle">
-            You must be logged in to create a topic.
-          </p>
+          <p className="page-subtitle">You must be logged in to create a topic.</p>
 
-          <div className="form-actions" style={{ marginTop: 16 }}>
-            <button className="btn primary" onClick={() => navigate("/login")}>
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn primary"
+              onClick={() => navigate("/login")}
+            >
               Go to Login
             </button>
+
             <Link className="btn" to="/topics">
               Back to Topics
             </Link>
@@ -67,13 +71,12 @@ export default function CreateTopicPage() {
   }
 
   return (
-    <main className="container page-section auth-layout">
+    <main className="container page-section">
       <section className="card">
         <h1 className="page-title">Create Topic</h1>
         <p className="page-subtitle">Logged in as {user.username}</p>
 
         {err ? <p className="status error">{err}</p> : null}
-        {info ? <p className="status success">{info}</p> : null}
 
         <form onSubmit={onSubmit} className="form-grid" style={{ marginTop: 16 }}>
           <div>
@@ -82,9 +85,9 @@ export default function CreateTopicPage() {
               id="title"
               className="input"
               type="text"
-              maxLength={150}
               value={title}
               onChange={(e) => setTitle(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
@@ -96,13 +99,15 @@ export default function CreateTopicPage() {
               rows={8}
               value={body}
               onChange={(e) => setBody(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn primary">
-              Create
+            <button type="submit" className="btn primary" disabled={submitting}>
+              {submitting ? "Creating Topic..." : "Create"}
             </button>
+
             <Link className="btn" to="/topics">
               Cancel
             </Link>

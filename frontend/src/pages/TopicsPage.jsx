@@ -174,11 +174,11 @@ export default function TopicsPage() {
         </form>
 
         <div className="topics-toolbar-footer">
-  <p className="small">
-    Showing page {pagination.page} of {pagination.totalPages} ·{" "}
-    {pagination.total} total topic{pagination.total === 1 ? "" : "s"}
-  </p>
-</div>
+          <p className="small">
+            Showing page {pagination.page} of {pagination.totalPages} ·{" "}
+            {pagination.total} total topic{pagination.total === 1 ? "" : "s"}
+          </p>
+        </div>
 
         {topics.length === 0 ? (
           <div className="empty-state-block">
