@@ -19,7 +19,6 @@ export default function Header() {
 
         <nav className="nav">
           <Link to="/topics">Topics</Link>
-
           {user ? <Link to="/topics/new">Create Topic</Link> : null}
 
           {loading ? (
@@ -34,7 +33,10 @@ export default function Header() {
               </button>
             </>
           ) : (
-            <Link to="/login">Login</Link>
+            <>
+              <Link to="/login">Login</Link>
+              <Link to="/register">Register</Link>
+            </>
           )}
         </nav>
       </div>

@@ -53,13 +53,15 @@ export default function LoginPage() {
     <main className="container page-section auth-layout">
       <section className="card">
         <h1 className="page-title">Login</h1>
-        <p className="page-subtitle">
-          Sign in with your username or email.
-        </p>
+        <p className="page-subtitle">Sign in with your username or email.</p>
 
         {err ? <p className="status error">{err}</p> : null}
 
-        <form onSubmit={onSubmit} className="form-grid" style={{ marginTop: 16 }}>
+        <form
+          onSubmit={onSubmit}
+          className="form-grid"
+          style={{ marginTop: 16 }}
+        >
           <div>
             <label htmlFor="identifier">Username or Email</label>
             <input
@@ -93,7 +95,7 @@ export default function LoginPage() {
         </form>
 
         <p className="auth-note">
-          Register UI is not wired here yet. Login is fully connected to the backend.
+          Don’t have an account yet? <Link to="/register">Register here</Link>.
         </p>
       </section>
     </main>
