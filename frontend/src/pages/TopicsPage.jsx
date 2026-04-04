@@ -1,9 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 10;
+
+function formatDateTime(value) {
+  if (!value) return "—";
+  return new Date(value).toLocaleString();
+}
 
 export default function TopicsPage() {
   const [topics, setTopics] = useState([]);
@@ -47,7 +52,7 @@ export default function TopicsPage() {
             totalPages: 1,
             hasPrev: false,
             hasNext: false,
-          },
+          }
         );
       })
       .catch((e) => {
@@ -86,49 +91,6 @@ export default function TopicsPage() {
     setSortBy("newest");
     setPage(1);
     setErr("");
-  }
-
-  const filteredTopics = useMemo(() => {
-    const q = search.trim().toLowerCase();
-
-    let result = [...topics];
-
-    if (ownershipFilter === "mine" && user) {
-      result = result.filter((t) => t.author_id === user.id);
-    }
-
-    if (q) {
-      result = result.filter((t) => {
-        const title = String(t.title || "").toLowerCase();
-        const author = String(t.author_username || "").toLowerCase();
-        return title.includes(q) || author.includes(q);
-      });
-    }
-
-    result.sort((a, b) => {
-      if (sortBy === "oldest") {
-        return new Date(a.created_at) - new Date(b.created_at);
-      }
-
-      if (sortBy === "title-asc") {
-        return String(a.title || "").localeCompare(String(b.title || ""));
-      }
-
-      if (sortBy === "title-desc") {
-        return String(b.title || "").localeCompare(String(a.title || ""));
-      }
-
-      // newest
-      return new Date(b.created_at) - new Date(a.created_at);
-    });
-
-    return result;
-  }, [topics, search, ownershipFilter, sortBy, user]);
-
-  function resetControls() {
-    setSearch("");
-    setOwnershipFilter("all");
-    setSortBy("newest");
   }
 
   return (
@@ -239,11 +201,28 @@ export default function TopicsPage() {
 
               return (
                 <article key={t.id} className="card topic-card">
-                  <h2 className="topic-card-title">{t.title}</h2>
+                  <div className="topic-card-header">
+                    <div>
+                      <h2 className="topic-card-title">{t.title}</h2>
+                      <p className="topic-meta">
+                        by <strong>{t.author_username}</strong>
+                      </p>
+                    </div>
 
-                  <p className="topic-meta">
-                    by <strong>{t.author_username}</strong>
-                  </p>
+                    <div className="topic-stat-badge">
+                      {Number(t.reply_count || 0)} repl
+                      {Number(t.reply_count || 0) === 1 ? "y" : "ies"}
+                    </div>
+                  </div>
+
+                  <div className="topic-card-stats">
+                    <span className="topic-stat-chip">
+                      Created: {formatDateTime(t.created_at)}
+                    </span>
+                    <span className="topic-stat-chip">
+                      Last Updated: {formatDateTime(t.last_activity_at)}
+                    </span>
+                  </div>
 
                   {shortPreview ? (
                     <div className="topic-preview">{shortPreview}</div>

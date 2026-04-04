@@ -5,7 +5,7 @@ const requireAuth = require("../middleware/requireAuth");
 
 const router = express.Router();
 
-// #55 GET /topics (public, with pagination/filter/sort)
+// #55 GET /topics (public, with pagination/filter/sort + topic metadata)
 router.get("/", async (req, res) => {
   try {
     const rawPage = Number(req.query.page ?? 1);
@@ -69,10 +69,28 @@ router.get("/", async (req, res) => {
         t.created_at,
         t.updated_at,
         u.id AS author_id,
-        u.username AS author_username
+        u.username AS author_username,
+        COUNT(r.id) AS reply_count,
+        MAX(r.created_at) AS latest_reply_at,
+        CASE
+          WHEN MAX(r.created_at) IS NULL THEN t.updated_at
+          WHEN MAX(r.created_at) > t.updated_at THEN MAX(r.created_at)
+          ELSE t.updated_at
+        END AS last_activity_at
       FROM topics t
       JOIN users u ON u.id = t.user_id
+      LEFT JOIN replies r
+        ON r.topic_id = t.id
+       AND r.deleted_at IS NULL
       ${whereSql}
+      GROUP BY
+        t.id,
+        t.title,
+        t.body,
+        t.created_at,
+        t.updated_at,
+        u.id,
+        u.username
       ORDER BY ${orderBy}
       LIMIT ? OFFSET ?
       `,

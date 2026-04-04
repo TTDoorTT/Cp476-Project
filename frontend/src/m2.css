@@ -572,3 +572,45 @@ textarea:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+.topic-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.topic-card-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.topic-stat-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f5f7fb;
+  color: #475467;
+  font-size: 0.86rem;
+  font-weight: 600;
+  border: 1px solid #e4e7ec;
+}
+
+.topic-stat-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #eef2ff;
+  color: #3b5bff;
+  font-size: 0.88rem;
+  font-weight: 700;
+  border: 1px solid #c7d7fe;
+}

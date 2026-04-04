@@ -37,6 +37,30 @@ export default function TopicDetailPage() {
     return user && (user.role === "admin" || user.id === reply.author_id);
   }
 
+  function confirmDeleteTopic() {
+    return window.confirm(
+      [
+        "Delete this topic?",
+        "",
+        "This will soft delete the topic.",
+        "It will disappear from normal users and topic lists.",
+        "An admin can restore it later from the deleted topics view.",
+      ].join("\n"),
+    );
+  }
+
+  function confirmDeleteReply() {
+    return window.confirm(
+      [
+        "Delete this reply?",
+        "",
+        "This will soft delete the reply.",
+        "It will disappear from the discussion for normal users.",
+        "An admin can restore it later from the deleted replies view.",
+      ].join("\n"),
+    );
+  }
+
   async function loadAll() {
     setErr("");
 
@@ -105,20 +129,28 @@ export default function TopicDetailPage() {
     }
   }
 
-  async function onDeleteTopic() {
-    if (!confirm("Delete this topic?")) return;
+  function confirmDeleteTopic() {
+    return window.confirm(
+      [
+        "Delete this topic?",
+        "",
+        "This will soft delete the topic.",
+        "It will disappear from normal users and topic lists.",
+        "An admin can restore it later from the deleted topics view.",
+      ].join("\n"),
+    );
+  }
 
-    setErr("");
-    setInfo("");
-
-    try {
-      setDeletingTopic(true);
-      await api.deleteTopic(topicId);
-      navigate("/topics");
-    } catch (e) {
-      setErr(e.message || "Failed to delete topic");
-      setDeletingTopic(false);
-    }
+  function confirmDeleteReply() {
+    return window.confirm(
+      [
+        "Delete this reply?",
+        "",
+        "This will soft delete the reply.",
+        "It will disappear from the discussion for normal users.",
+        "An admin can restore it later from the deleted replies view.",
+      ].join("\n"),
+    );
   }
 
   function startEditReply(reply) {
@@ -159,8 +191,8 @@ export default function TopicDetailPage() {
     }
   }
 
-  async function deleteReply(replyId) {
-    if (!confirm("Delete this reply?")) return;
+    async function deleteReply(replyId) {
+    if (!confirmDeleteReply()) return;
 
     setErr("");
     setInfo("");
@@ -436,7 +468,11 @@ export default function TopicDetailPage() {
           Post a Reply
         </h3>
 
-        <form onSubmit={onSubmitReply} className="form-grid" style={{ marginTop: 16 }}>
+        <form
+          onSubmit={onSubmitReply}
+          className="form-grid"
+          style={{ marginTop: 16 }}
+        >
           <div>
             <label htmlFor="reply-body">Reply</label>
             <textarea
@@ -450,7 +486,11 @@ export default function TopicDetailPage() {
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn primary" disabled={postingReply}>
+            <button
+              type="submit"
+              className="btn primary"
+              disabled={postingReply}
+            >
               {postingReply ? "Posting..." : "Submit Reply"}
             </button>
           </div>
