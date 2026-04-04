@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 6;
 
 function formatDateTime(value) {
   if (!value) return "—";
