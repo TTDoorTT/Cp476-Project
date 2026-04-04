@@ -85,6 +85,89 @@ router.post("/topics/:id/restore", requireAdmin, async (req, res) => {
   }
 });
 
+// GET /admin/deleted-replies
+router.get("/deleted-replies", requireAdmin, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `
+      SELECT
+        r.id,
+        r.topic_id,
+        r.body,
+        r.created_at,
+        r.updated_at,
+        r.deleted_at,
+        t.title AS topic_title,
+        u.id AS author_id,
+        u.username AS author_username
+      FROM replies r
+      JOIN topics t ON t.id = r.topic_id
+      JOIN users u ON u.id = r.user_id
+      WHERE r.deleted_at IS NOT NULL
+      ORDER BY r.deleted_at DESC
+      LIMIT 300
+      `
+    );
+
+    return res.json({ replies: rows });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "server_error", message: err.message });
+  }
+});
+
+// POST /admin/replies/:id/restore
+router.post("/replies/:id/restore", requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res
+        .status(400)
+        .json({ error: "validation_error", message: "invalid reply id" });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT id, deleted_at
+      FROM replies
+      WHERE id = ?
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "not_found", message: "reply not found" });
+    }
+
+    if (rows[0].deleted_at === null) {
+      return res.status(400).json({
+        error: "validation_error",
+        message: "reply is not deleted",
+      });
+    }
+
+    await pool.query(
+      `
+      UPDATE replies
+      SET deleted_at = NULL
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    return res.json({ message: "reply restored", id });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "server_error", message: err.message });
+  }
+});
+
 // GET /admin/users
 router.get("/users", requireAdmin, async (req, res) => {
   try {
@@ -109,53 +192,6 @@ router.get("/users", requireAdmin, async (req, res) => {
     return res
       .status(500)
       .json({ error: "server_error", message: err.message });
-  }
-});
-
-router.get("/summary", requireAdmin, async (req, res) => {
-  try {
-    const [[usersRow]] = await pool.query(
-      `
-      SELECT COUNT(*) AS count
-      FROM users
-      WHERE deleted_at IS NULL
-      `
-    );
-
-    const [[activeTopicsRow]] = await pool.query(
-      `
-      SELECT COUNT(*) AS count
-      FROM topics
-      WHERE deleted_at IS NULL
-      `
-    );
-
-    const [[deletedTopicsRow]] = await pool.query(
-      `
-      SELECT COUNT(*) AS count
-      FROM topics
-      WHERE deleted_at IS NOT NULL
-      `
-    );
-
-    const [[deletedRepliesRow]] = await pool.query(
-      `
-      SELECT COUNT(*) AS count
-      FROM replies
-      WHERE deleted_at IS NOT NULL
-      `
-    );
-
-    res.json({
-      summary: {
-        users: Number(usersRow.count || 0),
-        activeTopics: Number(activeTopicsRow.count || 0),
-        deletedTopics: Number(deletedTopicsRow.count || 0),
-        deletedReplies: Number(deletedRepliesRow.count || 0),
-      },
-    });
-  } catch (err) {
-    res.status(500).json({ error: "server_error", message: err.message });
   }
 });
 

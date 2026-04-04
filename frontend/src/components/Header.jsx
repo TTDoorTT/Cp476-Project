@@ -25,6 +25,7 @@ export default function Header() {
             <>
               <Link to="/admin">Admin</Link>
               <Link to="/admin/deleted-topics">Deleted Topics</Link>
+              <Link to="/admin/deleted-replies">Deleted Replies</Link>
               <Link to="/admin/users">Users</Link>
             </>
           ) : null}
