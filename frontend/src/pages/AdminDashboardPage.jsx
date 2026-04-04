@@ -28,7 +28,7 @@ export default function AdminDashboardPage() {
             activeTopics: 0,
             deletedTopics: 0,
             deletedReplies: 0,
-          }
+          },
         );
       })
       .catch((e) => {
@@ -142,6 +142,13 @@ export default function AdminDashboardPage() {
             <h2 className="admin-shortcut-title">Deleted Topics</h2>
             <p className="small">
               Review soft-deleted topics and restore them.
+            </p>
+          </Link>
+
+          <Link className="card admin-shortcut" to="/admin/deleted-replies">
+            <h2 className="admin-shortcut-title">Deleted Replies</h2>
+            <p className="small">
+              Review soft-deleted replies and restore them.
             </p>
           </Link>
         </div>

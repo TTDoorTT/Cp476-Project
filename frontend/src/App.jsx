@@ -10,6 +10,7 @@ import CreateTopicPage from "./pages/CreateTopicPage";
 import AdminDeletedTopicsPage from "./pages/AdminDeletedTopicsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
 import AdminDashboardPage from "./pages/AdminDashboardPage";
+import AdminDeletedRepliesPage from "./pages/AdminDeletedRepliesPage";
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
             path="/admin/deleted-topics"
             element={<AdminDeletedTopicsPage />}
           />
+          <Route path="/admin/deleted-replies" element={<AdminDeletedRepliesPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="*" element={<div>404</div>} />
         </Routes>

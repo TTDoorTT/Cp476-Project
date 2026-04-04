@@ -46,13 +46,7 @@ export const api = {
   logout: () => apiFetch("/auth/logout", { method: "POST" }),
 
   // Topics
-  listTopics: ({
-    page = 1,
-    limit = 10,
-    q = "",
-    sort = "newest",
-    scope = "all",
-  } = {}) => {
+  listTopics: ({ page = 1, limit = 10, q = "", sort = "newest", scope = "all" } = {}) => {
     const params = new URLSearchParams();
     params.set("page", String(page));
     params.set("limit", String(limit));
@@ -103,11 +97,15 @@ export const api = {
   // Admin
   listAdminSummary: () => apiFetch("/admin/summary", { method: "GET" }),
   listDeletedTopics: () => apiFetch("/admin/deleted-topics", { method: "GET" }),
-
   restoreTopicAdmin: (id) =>
     apiFetch(`/admin/topics/${id}/restore`, {
       method: "POST",
     }),
-
+  listDeletedReplies: () =>
+    apiFetch("/admin/deleted-replies", { method: "GET" }),
+  restoreReplyAdmin: (id) =>
+    apiFetch(`/admin/replies/${id}/restore`, {
+      method: "POST",
+    }),
   listUsersAdmin: () => apiFetch("/admin/users", { method: "GET" }),
 };
