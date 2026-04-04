@@ -460,3 +460,44 @@ button.btn:disabled {
   transform: none;
   box-shadow: none;
 }
+
+.topics-toolbar {
+  display: grid;
+  grid-template-columns: minmax(240px, 1.6fr) minmax(160px, 0.8fr) minmax(180px, 0.9fr);
+  gap: 14px;
+  margin-top: 18px;
+  align-items: end;
+}
+
+.topics-toolbar-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.topics-search-group {
+  min-width: 0;
+}
+
+.topics-toolbar-footer {
+  margin-top: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.empty-state-block {
+  margin-top: 18px;
+  padding: 18px;
+  border: 1px dashed #d6dbe6;
+  border-radius: 14px;
+  background: #fafbff;
+}
+
+@media (max-width: 860px) {
+  .topics-toolbar {
+    grid-template-columns: 1fr;
+  }
+}
