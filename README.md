@@ -1,123 +1,192 @@
 # Cp476-Project
-# Online Discussion Board / Forum
+## Online Discussion Board / Forum
 
 ## Project Overview
-This project is a simplified online discussion board designed as a full-stack web application for **CP476A – Internet Computing**.  
-Users can register/login, create discussion topics, post replies, and manage their own content. The application demonstrates an end-to-end workflow against a relational database, CRUD for core objects, and basic security practices (validation + authorization + parameterized SQL).
+
+This project is a full-stack online discussion board built for **CP476A – Internet Computing**.
+
+Users can register, log in, create discussion topics, post replies, and manage their own content. The application demonstrates a complete client-server workflow using a relational database, session-based authentication, CRUD for core resources, ownership/admin authorization, soft delete behavior, and basic security practices such as server-side validation and parameterized SQL.
 
 ---
 
 ## Team Members
+
 - Yu SiCheng
 - Tojo Tobin
 - Qi Wit
 
 ---
 
-## Core Features (Implemented)
+## Implemented Features
 
-### Authentication & Users
+### Authentication and Sessions
 - User registration
-- User login/logout (**session cookie auth**)
-- `GET /auth/me` to read current session user
-- User roles via `users.role` = `user | admin`
-
-### Topics (CRUD)
-- List topics
-- View topic detail
-- Create topic (auth required)
-- Edit topic (**owner/admin**)
-- Delete topic (**owner/admin**, **soft delete** via `deleted_at`)
-
-### Replies (CRUD)
-- List replies for a topic
-- Post reply (auth required)
-- Edit reply (**owner/admin**)
-- Delete reply (**owner/admin**, **soft delete** via `deleted_at`)
-
-### Security & Validation
-- Server-side input validation (required fields, basic length checks)
-- Authorization enforcement (401 unauthenticated, 403 forbidden)
-- Parameterized SQL queries (prevents SQL injection)
-- React renders user content as plain text (no `dangerouslySetInnerHTML`)
-
----
-
-## Tech Stack (Final)
-- **Frontend:** React (Vite)
-- **Backend:** Node.js + Express
-- **Database:** MySQL 8 (Docker)
-- **Auth:** Express sessions (cookie-based)
-- **Project Management:** GitHub Issues + GitHub Projects (Kanban)
-
----
-
-## Repo Structure
-- `/frontend` — React frontend (Vite)
-- `/frontend_m2_static` — archived Milestone 2 static HTML UI (kept for evidence/reference)
-- `/backend` — Express API server
-- `/sql` — schema and migrations
-- `/docs` — milestone artifacts (diagrams, reports, etc.)
-
----
-
-## Data Model (High-Level)
-
-### Users
-- id (PK)
-- username (UNIQUE, NOT NULL)
-- email (UNIQUE, NOT NULL)
-- password_hash (NOT NULL)
-- role (ENUM('user','admin') NOT NULL default 'user')
-- created_at (default current timestamp)
-- deleted_at (nullable)
+- User login with **username or email**
+- User logout
+- Session-based authentication using `express-session`
+- `GET /auth/me` to read the currently authenticated user
+- User roles via `users.role` with values:
+  - `user`
+  - `admin`
 
 ### Topics
-- id (PK)
-- user_id (FK → users.id)
-- title
-- body
-- created_at
-- updated_at
-- deleted_at (soft delete)
+- View all topics
+- Topic list pagination
+- Search topics by title or author
+- Filter topic list to **All Topics** or **My Topics**
+- Sort topics by:
+  - newest
+  - oldest
+  - title A–Z
+  - title Z–A
+- Topic metadata shown in list:
+  - author
+  - reply count
+  - created time
+  - last activity time
+- View topic detail
+- Create topic
+- Edit topic (owner or admin)
+- Delete topic (owner or admin)
+- Topic deletion is implemented as **soft delete** using `deleted_at`
 
 ### Replies
-- id (PK)
-- topic_id (FK → topics.id)
-- user_id (FK → users.id)
-- body
-- created_at
-- updated_at
-- deleted_at (soft delete)
+- View replies for a topic
+- Post replies to a topic
+- Edit reply (owner or admin)
+- Delete reply (owner or admin)
+- Reply deletion is implemented as **soft delete** using `deleted_at`
+
+### My Content
+- Logged-in users can view their own posted content
+- Separate backend endpoints for:
+  - `GET /me/topics`
+  - `GET /me/replies`
+
+### Admin Features
+- View all current users
+- View soft-deleted topics
+- Restore soft-deleted topics
+- View soft-deleted replies
+- Restore soft-deleted replies
+
+### Security and Validation
+- Server-side input validation for auth, topics, and replies
+- Ownership/admin authorization checks
+- Parameterized SQL queries through `mysql2`
+- React rendering of user content as plain text
+- Session-protected routes for authenticated actions
+- Admin-only routes for admin functionality
 
 ---
 
-## Running Locally (Clean Machine Steps)
+## Tech Stack
 
-### 1) Database (Docker)
-From the repo root:
+### Frontend
+- React
+- React Router
+- Vite
+
+### Backend
+- Node.js
+- Express
+- express-session
+- bcrypt
+- mysql2
+- CORS
+- cookie-parser
+- dotenv
+
+### Database
+- MySQL 8
+- Docker / Docker Compose
+
+---
+
+## Repository Structure
+
+```text
+Cp476-Project/
+├─ backend/              # Express API server
+├─ frontend/             # React + Vite frontend
+├─ frontend_m2_static/   # Archived Milestone 2 static frontend
+├─ sql/                  # Schema and migrations
+├─ docs/                 # Project documents / diagrams / artifacts
+├─ docker-compose.yml    # MySQL container setup
+└─ README.md
+```
+
+---
+
+## Data Model Summary
+
+### users
+- `id` (PK)
+- `username` (unique)
+- `email` (unique)
+- `password_hash`
+- `role` (`user` or `admin`)
+- `created_at`
+- `deleted_at`
+
+### topics
+- `id` (PK)
+- `user_id` (FK → users.id)
+- `title`
+- `body`
+- `created_at`
+- `updated_at`
+- `deleted_at`
+
+### replies
+- `id` (PK)
+- `topic_id` (FK → topics.id)
+- `user_id` (FK → users.id)
+- `body`
+- `created_at`
+- `updated_at`
+- `deleted_at`
+
+---
+
+## Local Setup
+
+## 1. Start the database
+
+From the repository root:
+
 ```bash
 docker compose up -d
 ```
 
-Load schema into MySQL:
+This starts a MySQL 8 container named `cp476_mysql`.
+
+---
+
+## 2. Load the schema
+
+From the repository root:
+
 ```bash
 docker exec -i cp476_mysql mysql -ucp476 -pcp476pass cp476_forum < sql/schema.sql
 ```
 
-Verify tables:
+Apply the role migration:
+
+```bash
+docker exec -i cp476_mysql mysql -ucp476 -pcp476pass cp476_forum < sql/migrations/001_add_role_to_users.sql
+```
+
+Optional verification:
+
 ```bash
 docker exec -it cp476_mysql mysql -ucp476 -pcp476pass -e "SHOW TABLES;" cp476_forum
 ```
 
-Expected tables: `users`, `topics`, `replies`
-
-> Note: A migration was added during M3:
-> - `sql/migrations/001_add_role_to_users.sql`
-
 ---
 
-### 2) Backend (Node + Express)
+## 3. Start the backend
+
 ```bash
 cd backend
 npm install
@@ -125,31 +194,61 @@ cp .env.example .env
 npm run dev
 ```
 
-Health check:
-```bash
-curl http://localhost:3000/health
+Backend default URL:
+
+```text
+http://localhost:3000
 ```
 
-DB test:
+Quick checks:
+
 ```bash
+curl http://localhost:3000/health
 curl http://localhost:3000/db-test
 ```
 
 ---
 
-### 3) Frontend (React)
+## 4. Start the frontend
+
 ```bash
 cd frontend
 npm install
 npm run dev
 ```
 
-Open:
-- http://localhost:5173
+Frontend default URL:
+
+```text
+http://localhost:5173
+```
 
 ---
 
-## API Endpoints (Core)
+## Environment Variables
+
+The backend `.env.example` includes:
+
+```env
+PORT=3000
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_USER=cp476
+DB_PASSWORD=cp476pass
+DB_NAME=cp476_forum
+SESSION_SECRET=dev_secret_change_later
+FRONTEND_ORIGIN=http://localhost:5173
+```
+
+---
+
+## Core API Endpoints
+
+### Health / Test
+- `GET /health`
+- `GET /db-test`
+- `GET /session-test`
+- `GET /protected-test`
 
 ### Auth
 - `POST /auth/register`
@@ -160,20 +259,57 @@ Open:
 ### Topics
 - `GET /topics`
 - `GET /topics/:id`
-- `POST /topics` (auth required)
-- `PUT /topics/:id` (owner/admin)
-- `DELETE /topics/:id` (owner/admin, soft delete)
+- `POST /topics`
+- `PUT /topics/:id`
+- `DELETE /topics/:id`
 
 ### Replies
 - `GET /topics/:topicId/replies`
-- `POST /topics/:topicId/replies` (auth required)
-- `PUT /replies/:id` (owner/admin)
-- `DELETE /replies/:id` (owner/admin, soft delete)
+- `POST /topics/:topicId/replies`
+- `PUT /replies/:id`
+- `DELETE /replies/:id`
+
+### My Content
+- `GET /me/topics`
+- `GET /me/replies`
+
+### Admin
+- `GET /admin/deleted-topics`
+- `POST /admin/topics/:id/restore`
+- `GET /admin/deleted-replies`
+- `POST /admin/replies/:id/restore`
+- `GET /admin/users`
 
 ---
 
-## User/Admin Setup (for Demo/Testing)
-To promote a user to admin:
+## Frontend Pages
+
+- `/login`
+- `/register`
+- `/topics`
+- `/topics/:id`
+- `/topics/new`
+- `/my-content`
+- `/admin/deleted-topics`
+- `/admin/deleted-replies`
+- `/admin/users`
+
+---
+
+## Demo / Testing Notes
+
+### Create a normal user
+
+```bash
+curl -i -X POST http://localhost:3000/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"user1","email":"user1@test.com","password":"password123"}'
+```
+
+### Create an admin user
+
+First register a user, then update the role in MySQL:
+
 ```bash
 curl -i -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
@@ -183,26 +319,24 @@ docker exec -it cp476_mysql mysql -ucp476 -pcp476pass cp476_forum -e \
 "UPDATE users SET role='admin' WHERE username='admin1'; SELECT id, username, role FROM users;"
 ```
 
-To add a normal user:
-```bash
-curl -i -X POST http://localhost:3000/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"username":"user2","email":"user2@test.com","password":"password123"}'
-```
-
----
-
-## Project Management
-- GitHub Issues track tasks
-- GitHub Projects (Kanban) columns:
-  - Backlog
-  - Ready
-  - In Progress
-  - In Review
-  - Done
-
 ---
 
 ## Notes
-- Soft delete is implemented via `deleted_at`. List/detail endpoints filter `deleted_at IS NULL`.
-- Frontend conditionally renders edit/delete controls for owner/admin; backend is the source of truth.
+
+- Topics and replies use **soft delete** via `deleted_at`.
+- The topic list supports pagination, filtering, search, and sorting.
+- Auth is cookie/session based, so frontend requests must send credentials.
+- The archived `frontend_m2_static` folder is kept as milestone evidence and styling reference.
+
+---
+
+## Course Context
+
+This repository was developed as a CP476 course project to demonstrate:
+- full-stack web application structure
+- client/server interaction
+- relational database design
+- authentication and authorization
+- CRUD functionality
+- software project organization using GitHub
+
