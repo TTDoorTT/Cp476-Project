@@ -135,7 +135,10 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+  transition:
+    transform 0.16s ease,
+    box-shadow 0.16s ease,
+    border-color 0.16s ease;
 }
 
 .topic-card:hover {
@@ -210,7 +213,10 @@
   text-decoration: none;
   color: var(--text);
   font-weight: 600;
-  transition: transform 0.14s ease, box-shadow 0.14s ease, background-color 0.14s ease,
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease,
+    background-color 0.14s ease,
     border-color 0.14s ease;
 }
 
@@ -259,7 +265,10 @@ textarea {
   border-radius: var(--radius-md);
   font-size: 1rem;
   color: var(--text);
-  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
 }
 
 .input:focus,
@@ -501,4 +510,25 @@ button.btn:disabled {
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
+}
+
+.status.info {
+  background: #eff8ff;
+  color: #175cd3;
+  border: 1px solid #b2ddff;
+}
+
+button.btn:disabled,
+a.btn[aria-disabled="true"] {
+  opacity: 0.68;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.input:disabled,
+textarea:disabled {
+  background: #f8fafc;
+  color: #667085;
+  cursor: not-allowed;
 }

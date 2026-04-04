@@ -9,6 +9,7 @@ export default function LoginPage() {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [err, setErr] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -23,10 +24,13 @@ export default function LoginPage() {
     }
 
     try {
+      setSubmitting(true);
       await login(id, pw);
       navigate("/topics");
     } catch (e2) {
       setErr(e2.message || "Login failed");
+    } finally {
+      setSubmitting(false);
     }
   }
 
@@ -57,11 +61,7 @@ export default function LoginPage() {
 
         {err ? <p className="status error">{err}</p> : null}
 
-        <form
-          onSubmit={onSubmit}
-          className="form-grid"
-          style={{ marginTop: 16 }}
-        >
+        <form onSubmit={onSubmit} className="form-grid" style={{ marginTop: 16 }}>
           <div>
             <label htmlFor="identifier">Username or Email</label>
             <input
@@ -70,6 +70,7 @@ export default function LoginPage() {
               type="text"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
@@ -81,13 +82,15 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={submitting}
             />
           </div>
 
           <div className="form-actions">
-            <button type="submit" className="btn primary">
-              Login
+            <button type="submit" className="btn primary" disabled={submitting}>
+              {submitting ? "Logging in..." : "Login"}
             </button>
+
             <Link className="btn" to="/topics">
               Back to Topics
             </Link>
