@@ -372,3 +372,84 @@ label {
     padding: 16px;
   }
 }
+
+.admin-grid {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.admin-item {
+  margin: 0;
+}
+
+.admin-item-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-item-title {
+  margin: 0 0 8px;
+  font-size: 1.15rem;
+  line-height: 1.25;
+}
+
+.admin-meta {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.admin-danger-badge {
+  background: #fff1f2;
+  color: #b42318;
+  border: 1px solid #fecdd3;
+}
+
+.users-table-wrap {
+  margin-top: 18px;
+  overflow-x: auto;
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 720px;
+}
+
+.users-table th,
+.users-table td {
+  text-align: left;
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.users-table thead th {
+  font-size: 0.92rem;
+  color: #475467;
+  background: #f8fafc;
+}
+
+.role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 28px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.role-admin {
+  background: #eef2ff;
+  color: #3b5bff;
+}
+
+.role-user {
+  background: #f4f4f5;
+  color: #3f3f46;
+}

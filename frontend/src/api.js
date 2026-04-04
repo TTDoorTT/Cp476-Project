@@ -81,4 +81,9 @@ export const api = {
     }),
 
   deleteReply: (id) => apiFetch(`/replies/${id}`, { method: "DELETE" }),
+
+  // Admin
+  listDeletedTopics: () => apiFetch("/admin/deleted-topics", { method: "GET" }),
+
+  listUsersAdmin: () => apiFetch("/admin/users", { method: "GET" }),
 };
