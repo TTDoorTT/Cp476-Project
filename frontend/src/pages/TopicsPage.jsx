@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../api";
 import { useAuth } from "../auth/AuthContext";
@@ -86,6 +86,49 @@ export default function TopicsPage() {
     setSortBy("newest");
     setPage(1);
     setErr("");
+  }
+
+  const filteredTopics = useMemo(() => {
+    const q = search.trim().toLowerCase();
+
+    let result = [...topics];
+
+    if (ownershipFilter === "mine" && user) {
+      result = result.filter((t) => t.author_id === user.id);
+    }
+
+    if (q) {
+      result = result.filter((t) => {
+        const title = String(t.title || "").toLowerCase();
+        const author = String(t.author_username || "").toLowerCase();
+        return title.includes(q) || author.includes(q);
+      });
+    }
+
+    result.sort((a, b) => {
+      if (sortBy === "oldest") {
+        return new Date(a.created_at) - new Date(b.created_at);
+      }
+
+      if (sortBy === "title-asc") {
+        return String(a.title || "").localeCompare(String(b.title || ""));
+      }
+
+      if (sortBy === "title-desc") {
+        return String(b.title || "").localeCompare(String(a.title || ""));
+      }
+
+      // newest
+      return new Date(b.created_at) - new Date(a.created_at);
+    });
+
+    return result;
+  }, [topics, search, ownershipFilter, sortBy, user]);
+
+  function resetControls() {
+    setSearch("");
+    setOwnershipFilter("all");
+    setSortBy("newest");
   }
 
   return (
