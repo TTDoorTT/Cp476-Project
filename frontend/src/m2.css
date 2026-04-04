@@ -460,3 +460,45 @@ button.btn:disabled {
   transform: none;
   box-shadow: none;
 }
+
+.topics-toolbar-submit {
+  min-width: 120px;
+}
+
+.pagination-bar {
+  margin-top: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pagination-status {
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+button.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+@media (max-width: 860px) {
+  .topics-toolbar-submit {
+    min-width: 0;
+  }
+
+  .pagination-bar {
+    justify-content: center;
+  }
+}
+
+.topics-toolbar-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}

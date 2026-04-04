@@ -46,7 +46,25 @@ export const api = {
   logout: () => apiFetch("/auth/logout", { method: "POST" }),
 
   // Topics
-  listTopics: () => apiFetch("/topics", { method: "GET" }),
+  listTopics: ({
+    page = 1,
+    limit = 10,
+    q = "",
+    sort = "newest",
+    scope = "all",
+  } = {}) => {
+    const params = new URLSearchParams();
+    params.set("page", String(page));
+    params.set("limit", String(limit));
+    params.set("sort", sort);
+    params.set("scope", scope);
+
+    if (q.trim()) {
+      params.set("q", q.trim());
+    }
+
+    return apiFetch(`/topics?${params.toString()}`, { method: "GET" });
+  },
 
   getTopic: (id) => apiFetch(`/topics/${id}`, { method: "GET" }),
 
