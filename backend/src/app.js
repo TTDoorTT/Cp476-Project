@@ -15,6 +15,8 @@ const requireAuth = require("./middleware/requireAuth");
 
 const app = express();
 
+const meRouter = require("./routes/me");
+
 app.use(express.json());
 
 app.use(
@@ -52,6 +54,8 @@ app.get("/protected-test", requireAuth, (req, res) => {
   res.json({ ok: true, user: req.session.user });
 });
 
+app.use("/auth", authRouter);
+app.use("/me", meRouter);
 app.use("/topics", topicsRouter);
 app.use("/", repliesRouter);
 app.use("/admin", adminRouter);
