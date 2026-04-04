@@ -453,3 +453,10 @@ label {
   background: #f4f4f5;
   color: #3f3f46;
 }
+
+button.btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}

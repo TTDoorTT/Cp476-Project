@@ -5,7 +5,6 @@ const requireAdmin = require("../middleware/requireAdmin");
 const router = express.Router();
 
 // GET /admin/deleted-topics
-// admin only
 router.get("/deleted-topics", requireAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query(
@@ -35,8 +34,58 @@ router.get("/deleted-topics", requireAdmin, async (req, res) => {
   }
 });
 
+// POST /admin/topics/:id/restore
+router.post("/topics/:id/restore", requireAdmin, async (req, res) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res
+        .status(400)
+        .json({ error: "validation_error", message: "invalid topic id" });
+    }
+
+    const [rows] = await pool.query(
+      `
+      SELECT id, deleted_at
+      FROM topics
+      WHERE id = ?
+      LIMIT 1
+      `,
+      [id]
+    );
+
+    if (rows.length === 0) {
+      return res
+        .status(404)
+        .json({ error: "not_found", message: "topic not found" });
+    }
+
+    if (rows[0].deleted_at === null) {
+      return res.status(400).json({
+        error: "validation_error",
+        message: "topic is not deleted",
+      });
+    }
+
+    await pool.query(
+      `
+      UPDATE topics
+      SET deleted_at = NULL
+      WHERE id = ?
+      `,
+      [id]
+    );
+
+    return res.json({ message: "topic restored", id });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "server_error", message: err.message });
+  }
+});
+
 // GET /admin/users
-// admin only
 router.get("/users", requireAdmin, async (req, res) => {
   try {
     const [rows] = await pool.query(
