@@ -19,6 +19,7 @@ export default function Header() {
 
         <nav className="nav">
           <Link to="/topics">Topics</Link>
+          {user ? <Link to="/me">My Content</Link> : null}
           {user ? <Link to="/topics/new">Create Topic</Link> : null}
 
           {user?.role === "admin" ? (
