@@ -112,4 +112,51 @@ router.get("/users", requireAdmin, async (req, res) => {
   }
 });
 
+router.get("/summary", requireAdmin, async (req, res) => {
+  try {
+    const [[usersRow]] = await pool.query(
+      `
+      SELECT COUNT(*) AS count
+      FROM users
+      WHERE deleted_at IS NULL
+      `
+    );
+
+    const [[activeTopicsRow]] = await pool.query(
+      `
+      SELECT COUNT(*) AS count
+      FROM topics
+      WHERE deleted_at IS NULL
+      `
+    );
+
+    const [[deletedTopicsRow]] = await pool.query(
+      `
+      SELECT COUNT(*) AS count
+      FROM topics
+      WHERE deleted_at IS NOT NULL
+      `
+    );
+
+    const [[deletedRepliesRow]] = await pool.query(
+      `
+      SELECT COUNT(*) AS count
+      FROM replies
+      WHERE deleted_at IS NOT NULL
+      `
+    );
+
+    res.json({
+      summary: {
+        users: Number(usersRow.count || 0),
+        activeTopics: Number(activeTopicsRow.count || 0),
+        deletedTopics: Number(deletedTopicsRow.count || 0),
+        deletedReplies: Number(deletedRepliesRow.count || 0),
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ error: "server_error", message: err.message });
+  }
+});
+
 module.exports = router;

@@ -9,6 +9,7 @@ import TopicDetailPage from "./pages/TopicDetailPage";
 import CreateTopicPage from "./pages/CreateTopicPage";
 import AdminDeletedTopicsPage from "./pages/AdminDeletedTopicsPage";
 import AdminUsersPage from "./pages/AdminUsersPage";
+import AdminDashboardPage from "./pages/AdminDashboardPage";
 
 export default function App() {
   return (
@@ -23,6 +24,7 @@ export default function App() {
           <Route path="/topics" element={<TopicsPage />} />
           <Route path="/topics/new" element={<CreateTopicPage />} />
           <Route path="/topics/:id" element={<TopicDetailPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
           <Route
             path="/admin/deleted-topics"
             element={<AdminDeletedTopicsPage />}
