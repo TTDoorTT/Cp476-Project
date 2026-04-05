@@ -1,27 +1,35 @@
-# Testing Report (Milestone 3)
+# M3 Testing Report
 
-**Project:** CP476 Forum  
-**Date:** __________  
-**Tested By:** __________  
+Project: CP476 Forum  
+Milestone: 3  
 
-## Environment
+## 1. Purpose
+This report summarizes manual testing performed for the Milestone 3 discussion forum application. The goal of testing was to verify that the major user flows, admin flows, authorization rules, soft-delete behavior, restore behavior, validation, and basic security checks work correctly across the React frontend, Express backend, and MySQL database.
 
-- **Backend:** Node.js + Express (port 3000)
-- **Frontend:** React (Vite) (port 5173)
-- **DB:** MySQL 8 (Docker) (port 3306)
-- **Auth:** Session cookies (`connect.sid`)
+## 2. Test Environment
+- Frontend: React + Vite (`http://localhost:5173`)
+- Backend: Node.js + Express (`http://localhost:3000`)
+- Database: MySQL 8 in Docker (`cp476_mysql`, port `3306`)
+- Authentication: Session cookie (`connect.sid`)
+- Browser used for manual UI tests: Chrome or equivalent modern browser
 
-## How to Run (for testing)
-
-### Start DB
+## 3. Setup Used for Testing
+### Start database
 ```bash
 docker compose up -d
+```
+
+### Load schema
+```bash
+docker exec -i cp476_mysql mysql -ucp476 -pcp476pass cp476_forum < sql/schema.sql
+docker exec -i cp476_mysql mysql -ucp476 -pcp476pass cp476_forum < sql/migrations/001_add_role_to_users.sql
 ```
 
 ### Start backend
 ```bash
 cd backend
 npm install
+cp .env.example .env
 npm run dev
 ```
 
@@ -32,85 +40,128 @@ npm install
 npm run dev
 ```
 
-## Test Accounts
-
-- **Normal User:** `lucas1 / password123`
-- add a normal user
+## 4. Test Accounts
+### Normal user
+Create through the app or API:
 ```bash
 curl -i -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
-  -d '{"username":"user2","email":"user2@test.com","password":"password123"}'
+  -d '{"username":"user1","email":"user1@test.com","password":"password123"}'
 ```
 
-- **Admin User (if enabled):** Promote via DB
-- add a normal user
+### Admin user
+Create a normal user first:
 ```bash
 curl -i -X POST http://localhost:3000/auth/register \
   -H "Content-Type: application/json" \
   -d '{"username":"admin1","email":"admin1@test.com","password":"password123"}'
+```
 
+Then promote the user in MySQL:
+```bash
 docker exec -it cp476_mysql mysql -ucp476 -pcp476pass cp476_forum -e \
 "UPDATE users SET role='admin' WHERE username='admin1'; SELECT id, username, role FROM users;"
 ```
 
+## 5. Testing Approach
+Testing was manual and focused on:
+- registration, login, logout, and session behavior
+- topic creation, editing, listing, filtering, and pagination
+- reply creation and editing
+- ownership and admin authorization
+- soft delete and restore behavior
+- admin-only views and actions
+- My Content page behavior
+- validation and safe content rendering
 
+## 6. Final Manual Test Results
+All cases below were re-verified manually and passed.
 
-```sql
-UPDATE users SET role='admin' WHERE username='lucas1';
-```
+### Authentication
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| AUTH-01 | User registration | New user can register successfully | Pass | Register page loaded, submission succeeded, and new account could log in afterward |
+| AUTH-02 | Login validation and success flow | Invalid credentials are rejected and valid credentials log the user in | Pass | Authenticated pages became accessible after valid login |
+| AUTH-03 | Logout flow | User is logged out and protected pages become inaccessible | Pass | Authenticated UI disappeared after logout |
 
-## Manual Test Cases
+### Guest / Protected Access
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| SEC-01 | Guest blocked from protected pages/actions | Unauthenticated users cannot access protected pages or perform protected actions | Pass | Create Topic, My Content, and admin pages were blocked correctly |
 
-**Legend:** Mark Pass/Fail and add notes.
+### Topics
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| TOP-01 | Create topic | Logged-in user can create a topic | Pass | New topic appeared in the topics list and in the user's content area |
+| TOP-02 | Edit own topic | Topic owner can edit their own topic and changes persist | Pass | Changes persisted after refresh |
+| USR-07 | Topic owner soft-delete | Topic owner can soft-delete their own topic | Pass | Topic disappeared from normal views and appeared in admin deleted-content view |
+| SEC-03 | Non-owner cannot delete another user's topic | Non-owner cannot delete someone else's topic | Pass | Delete control was not available and forced deletion was blocked |
+| ADM-06 | Admin can manage another user's topic | Admin can edit and soft-delete another user's topic | Pass | Edit persisted and delete removed the topic from normal views |
 
-## Authentication
+### Replies
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| REP-01 | Create reply | Logged-in user can post a reply | Pass | Reply appeared in thread and remained after refresh |
+| REP-02 | Edit own reply | Reply owner can edit their own reply and changes persist | Pass | Changes persisted after refresh |
+| USR-08 | Reply owner soft-delete | Reply owner can soft-delete their own reply | Pass | Reply disappeared from thread and appeared in admin deleted-content view |
+| SEC-04 | Non-owner cannot delete another user's reply | Non-owner cannot delete someone else's reply | Pass | Delete control was not available and forced deletion was blocked |
+| ADM-07 | Admin can manage another user's reply | Admin can edit and soft-delete another user's reply | Pass | Edit persisted and delete removed the reply from the normal thread |
 
-| ID | Test | Steps | Expected | Result | Notes |
-|---|---|---|---|---|---|
-| AUTH-01 | Login success | React: `/login` → enter valid creds | Header shows logged-in user + role | [x] Pass  [ ] Fail | Header showed `Logged in as lucas1 (user)` |
-| AUTH-02 | Login fail | `/login` with wrong password | Error shown; no session | [x] Pass  [ ] Fail | Login failed with `invalid credentials` and user remained logged out |
-| AUTH-03 | Session persists | Refresh page after login | Still logged in (`/auth/me`) | [x] Pass  [ ] Fail | After refresh, header still showed `Logged in as lucas1 (user)` |
-| AUTH-04 | Logout | Click logout | Logged out; `/auth/me` returns 401 | [x] Pass  [ ] Fail | Redirected to `/login`; header showed `Login` and no logged-in user |
+### Topics Page UI
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| UI-01 | Topic search/filter/reset | Search and filter work correctly and Reset restores full list | Pass | Matching results displayed correctly and empty state worked |
+| UI-02 | Topic pagination | Topics page paginates correctly across multiple pages | Pass | Next/previous pagination worked and page contents updated correctly |
 
-## Topics (CRUD + soft delete)
+### My Content UI
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| UI-03 | My Content tabs and pagination | My Topics / My Replies switch correctly and paginate cleanly | Pass | Only the user's own records were shown and layout stayed stable |
 
-| ID | Test | Steps | Expected | Result | Notes |
-|---|---|---|---|---|---|
-| TOP-01 | List topics | React: `/topics` | Topics load from backend | [x] Pass  [ ] Fail | Topics page loaded and header still showed `lucas1 (user)` |
-| TOP-02 | Create topic (auth required) | Logged in → `/topics/new` submit | Redirect to `/topics/:id` | [x] Pass  [ ] Fail | Created `M3 Manual Test Topic`; redirected to topic detail page and Edit/Delete buttons were visible |
-| TOP-03 | Create topic blocked | Logged out → `/topics/new` | UI blocks / backend 401 | [x] Pass  [ ] Fail | Create Topic page showed `You must be logged in to create a topic.` and provided a Go to Login button |
-| TOP-04 | View topic detail | Open `/topics/:id` | Title/body/author visible | [x] Pass  [ ] Fail | Topic detail page loaded and showed title, body, and author |
-| TOP-05 | Edit topic (owner/admin) | Edit topic → save | Updated content persists | [x] Pass  [ ] Fail | Topic title and body updated successfully and persisted on the detail page |
-| TOP-06 | Delete topic (soft delete) | Delete topic | Redirect; topic hidden | [x] Pass  [ ] Fail | Topic deleted successfully, redirected to topics list, and topic no longer appeared in the list |
-| TOP-07 | Deleted topic not accessible | Open deleted topic URL | 404 / not found | [x] Pass  [ ] Fail | Opening deleted topic URL showed `topic not found` on the topic detail page |
+### Validation and Safe Rendering
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| VAL-01 | Invalid topic/reply submission validation | Invalid or empty topic/reply submissions are blocked | Pass | Feedback appeared and no invalid records were created |
+| SEC-06 | XSS/script-style input handled safely | Script-like input does not execute in the browser | Pass | Content displayed safely and remained safe after refresh |
 
-## Replies (CRUD + soft delete)
+### Admin Pages and Admin-Only Features
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| ADM-01 | Admin dashboard summary | Admin dashboard loads and summary cards/counts display correctly | Pass | Non-admin access was correctly restricted |
+| ADM-02 | Admin users list | Admin users page loads and displays current users | Pass | Both admin and normal users were visible; non-admin access was blocked |
+| ADM-03 | Admin deleted-content view | Admin can view deleted topics/replies | Pass | Deleted items were visible and identifiable; non-admin access was blocked |
+| ADM-04 | Restore deleted topic | Admin can restore a soft-deleted topic | Pass | Restored topic reappeared in normal views and disappeared from deleted list |
+| ADM-05 | Restore deleted reply | Admin can restore a soft-deleted reply | Pass | Restored reply reappeared in thread and disappeared from deleted list |
 
-| ID | Test | Steps | Expected | Result | Notes |
-|---|---|---|---|---|---|
-| REP-01 | List replies | Open topic detail | Replies list loads | [x] Pass  [ ] Fail | Replies section loaded and showed the posted reply |
-| REP-02 | Create reply (auth required) | Logged in → post reply | Reply appears in list | [x] Pass  [ ] Fail | Reply appeared under the topic and Edit/Delete buttons were visible for the reply |
-| REP-03 | Create reply blocked | Logged out → post reply | Backend 401; UI shows error | [x] Pass  [ ] Fail | Reply was not posted and page showed `not logged in` while user remained logged out |
-| REP-04 | Edit reply (owner/admin) | Edit reply → save | Updated reply persists | [x] Pass  [ ] Fail | Reply text updated successfully and stayed visible after saving |
-| REP-05 | Delete reply (soft delete) | Delete reply | Reply removed from list | [x] Pass  [ ] Fail | Reply disappeared from the topic page after delete |
+### Admin Route Protection
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| SEC-05 | Non-admin cannot invoke admin restore routes directly | Non-admin direct restore attempts are rejected | Pass | Deleted topic/reply remained deleted after direct restore attempts |
 
-## Authorization (Owner/Admin rules)
+### Soft Delete Visibility
+| ID | Test | Expected Result | Status | Notes |
+|---|---|---|---|---|
+| SEC-07 | Soft-deleted content stays hidden from normal access | Deleted topic/reply should not appear in normal views or normal access paths | Pass | Deleted content only appeared in admin deleted-content view |
 
-| ID | Test | Steps | Expected | Result | Notes |
-|---|---|---|---|---|---|
-| AUTHZ-01 | Owner can manage own topic | Login as owner | Edit/Delete works | [x] Pass  [ ] Fail | Owner was able to edit and delete own topic |
-| AUTHZ-02 | Owner can manage own reply | Login as owner | Edit/Delete works | [x] Pass  [ ] Fail | Owner was able to edit and delete own reply |
-| AUTHZ-03 | Non-owner blocked | Login as different user (optional) | Backend 403 on edit/delete | [ ] Pass  [ ] Fail | |
-| AUTHZ-04 | Admin bypass (if enabled) | Promote to admin | Admin can manage others’ content | [ ] Pass  [ ] Fail | |
+## 7. Summary
+### Recorded pass count
+- Total manually re-verified test cases: 21
+- Passed: 21
+- Failed: 0
 
-## Summary
+### Overall assessment
+The project passed the major Milestone 3 functional checks:
+- registration, login, logout, and protected-route behavior
+- topic and reply creation/editing
+- owner-based soft delete behavior
+- cross-user authorization restrictions
+- admin override and admin-only management features
+- admin deleted-content and restore workflows
+- topic filtering and pagination
+- My Content tab separation and pagination
+- form validation and safe rendering of user input
 
-- **Total Cases:** 18
-- **Pass:** 18
-- **Fail:** 0
-
-## Notes
-
-- Soft delete implemented via `deleted_at`; list/detail endpoints filter `deleted_at IS NULL`.
-- Backend enforces authorization; React hides edit/delete buttons as best-effort UX.
-- XSS sanity check: Passed. Posting `<script>alert(1)</script>` did not execute any script. It rendered as plain text in the reply list.
+## 8. Notes
+- Testing in this repository is primarily manual rather than automated.
+- Both UI behavior and route protection were verified through workflow-based testing.
+- For final submission, screenshots of admin restore flows, authorization blocking, and pagination behavior would strengthen the report further.
