@@ -28,7 +28,7 @@ export default function AdminDashboardPage() {
             activeTopics: 0,
             deletedTopics: 0,
             deletedReplies: 0,
-          },
+          }
         );
       })
       .catch((e) => {
@@ -43,116 +43,135 @@ export default function AdminDashboardPage() {
 
   if (loading) {
     return (
-      <main className="container page-section">
-        <section className="card">
-          <h1 className="page-title">Admin Dashboard</h1>
-          <p className="status info">Checking session...</p>
-        </section>
-      </main>
+      <section className="page-section">
+        <div className="container">
+          <article className="card stack">
+            <h1 className="page-title">Admin Dashboard</h1>
+            <p className="empty-state">Checking session...</p>
+          </article>
+        </div>
+      </section>
     );
   }
 
   if (!user) {
     return (
-      <main className="container page-section">
-        <section className="card">
-          <h1 className="page-title">Admin Dashboard</h1>
-          <p className="status error">You must be logged in.</p>
-          <div className="form-actions">
-            <Link className="btn primary" to="/login">
-              Go to Login
-            </Link>
-          </div>
-        </section>
-      </main>
+      <section className="page-section">
+        <div className="container">
+          <article className="card stack">
+            <h1 className="page-title">Admin Dashboard</h1>
+            <p className="empty-state">You must be logged in.</p>
+            <div className="topic-actions">
+              <Link className="btn" to="/login">
+                Go to Login
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
     );
   }
 
   if (user.role !== "admin") {
     return (
-      <main className="container page-section">
-        <section className="card">
-          <h1 className="page-title">Admin Dashboard</h1>
-          <p className="status error">Admin only.</p>
-          <div className="form-actions">
-            <Link className="btn" to="/topics">
-              Back to Topics
-            </Link>
-          </div>
-        </section>
-      </main>
+      <section className="page-section">
+        <div className="container">
+          <article className="card stack">
+            <h1 className="page-title">Admin Dashboard</h1>
+            <p className="empty-state">Admin only.</p>
+            <div className="topic-actions">
+              <Link className="btn" to="/">
+                Back to Topics
+              </Link>
+            </div>
+          </article>
+        </div>
+      </section>
     );
   }
 
   return (
-    <main className="container page-section">
-      <section className="card">
-        <div className="row page-head">
-          <div style={{ flex: 1, minWidth: "240px" }}>
-            <h1 className="page-title">Admin Dashboard</h1>
-            <p className="page-subtitle">
-              Overview of moderation and user activity.
-            </p>
+    <section className="page-section">
+      <div className="container stack">
+        <article className="card stack">
+          <div className="row page-head">
+            <div>
+              <h1 className="page-title">Admin Dashboard</h1>
+              <p className="page-subtitle">
+                Overview of moderation and user activity.
+              </p>
+            </div>
           </div>
 
-          <div className="row">
-            <Link className="btn" to="/admin/users">
-              View Users
-            </Link>
-            <Link className="btn" to="/admin/deleted-topics">
-              View Deleted Topics
-            </Link>
-            <Link className="btn" to="/topics">
-              Back to Topics
-            </Link>
+          {err ? <div className="status error">{err}</div> : null}
+
+          <div className="admin-summary-grid">
+            <article className="admin-summary-card">
+              <p className="admin-summary-label">Current Users</p>
+              <p className="admin-summary-value">{summary.users}</p>
+            </article>
+
+            <article className="admin-summary-card">
+              <p className="admin-summary-label">Active Topics</p>
+              <p className="admin-summary-value">{summary.activeTopics}</p>
+            </article>
+
+            <article className="admin-summary-card">
+              <p className="admin-summary-label">Deleted Topics</p>
+              <p className="admin-summary-value">{summary.deletedTopics}</p>
+            </article>
+
+            <article className="admin-summary-card">
+              <p className="admin-summary-label">Deleted Replies</p>
+              <p className="admin-summary-value">{summary.deletedReplies}</p>
+            </article>
           </div>
+        </article>
+
+        <div className="admin-grid">
+          <article className="card admin-item stack">
+            <div className="admin-item-top">
+              <div>
+                <h2 className="admin-item-title">Manage Users</h2>
+                <p className="admin-meta">
+                  See all current users and their roles.
+                </p>
+              </div>
+              <Link className="btn" to="/admin/users">
+                Open Users
+              </Link>
+            </div>
+          </article>
+
+          <article className="card admin-item stack">
+            <div className="admin-item-top">
+              <div>
+                <h2 className="admin-item-title">Deleted Topics</h2>
+                <p className="admin-meta">
+                  Review soft-deleted topics and restore them.
+                </p>
+              </div>
+              <Link className="btn" to="/admin/deleted-topics">
+                Open Deleted Topics
+              </Link>
+            </div>
+          </article>
+
+          <article className="card admin-item stack">
+            <div className="admin-item-top">
+              <div>
+                <h2 className="admin-item-title">Deleted Replies</h2>
+                <p className="admin-meta">
+                  Review soft-deleted replies and restore them.
+                </p>
+              </div>
+              <Link className="btn" to="/admin/deleted-replies">
+                Open Deleted Replies
+              </Link>
+            </div>
+          </article>
         </div>
-
-        {err ? <p className="status error">{err}</p> : null}
-
-        <div className="admin-dashboard-grid">
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Current Users</p>
-            <p className="admin-stat-value">{summary.users}</p>
-          </article>
-
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Active Topics</p>
-            <p className="admin-stat-value">{summary.activeTopics}</p>
-          </article>
-
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Deleted Topics</p>
-            <p className="admin-stat-value">{summary.deletedTopics}</p>
-          </article>
-
-          <article className="admin-stat-card">
-            <p className="admin-stat-label">Deleted Replies</p>
-            <p className="admin-stat-value">{summary.deletedReplies}</p>
-          </article>
-        </div>
-
-        <div className="admin-dashboard-links">
-          <Link className="card admin-shortcut" to="/admin/users">
-            <h2 className="admin-shortcut-title">Manage Users</h2>
-            <p className="small">See all current users and their roles.</p>
-          </Link>
-
-          <Link className="card admin-shortcut" to="/admin/deleted-topics">
-            <h2 className="admin-shortcut-title">Deleted Topics</h2>
-            <p className="small">
-              Review soft-deleted topics and restore them.
-            </p>
-          </Link>
-
-          <Link className="card admin-shortcut" to="/admin/deleted-replies">
-            <h2 className="admin-shortcut-title">Deleted Replies</h2>
-            <p className="small">
-              Review soft-deleted replies and restore them.
-            </p>
-          </Link>
-        </div>
-      </section>
-    </main>
+      </div>
+    </section>
   );
 }
