@@ -4,11 +4,52 @@ const requireAdmin = require("../middleware/requireAdmin");
 
 const router = express.Router();
 
+// GET /admin/summary
+router.get("/summary", requireAdmin, async (req, res) => {
+  try {
+    const [[usersRow]] = await pool.query(`
+      SELECT COUNT(*) AS count
+      FROM users
+      WHERE deleted_at IS NULL
+    `);
+
+    const [[activeTopicsRow]] = await pool.query(`
+      SELECT COUNT(*) AS count
+      FROM topics
+      WHERE deleted_at IS NULL
+    `);
+
+    const [[deletedTopicsRow]] = await pool.query(`
+      SELECT COUNT(*) AS count
+      FROM topics
+      WHERE deleted_at IS NOT NULL
+    `);
+
+    const [[deletedRepliesRow]] = await pool.query(`
+      SELECT COUNT(*) AS count
+      FROM replies
+      WHERE deleted_at IS NOT NULL
+    `);
+
+    return res.json({
+      summary: {
+        users: Number(usersRow.count || 0),
+        activeTopics: Number(activeTopicsRow.count || 0),
+        deletedTopics: Number(deletedTopicsRow.count || 0),
+        deletedReplies: Number(deletedRepliesRow.count || 0),
+      },
+    });
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: "server_error", message: err.message });
+  }
+});
+
 // GET /admin/deleted-topics
 router.get("/deleted-topics", requireAdmin, async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      `
+    const [rows] = await pool.query(`
       SELECT
         t.id,
         t.title,
@@ -23,8 +64,7 @@ router.get("/deleted-topics", requireAdmin, async (req, res) => {
       WHERE t.deleted_at IS NOT NULL
       ORDER BY t.deleted_at DESC
       LIMIT 200
-      `
-    );
+    `);
 
     return res.json({ topics: rows });
   } catch (err) {
@@ -88,8 +128,7 @@ router.post("/topics/:id/restore", requireAdmin, async (req, res) => {
 // GET /admin/deleted-replies
 router.get("/deleted-replies", requireAdmin, async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      `
+    const [rows] = await pool.query(`
       SELECT
         r.id,
         r.topic_id,
@@ -106,8 +145,7 @@ router.get("/deleted-replies", requireAdmin, async (req, res) => {
       WHERE r.deleted_at IS NOT NULL
       ORDER BY r.deleted_at DESC
       LIMIT 300
-      `
-    );
+    `);
 
     return res.json({ replies: rows });
   } catch (err) {
@@ -171,8 +209,7 @@ router.post("/replies/:id/restore", requireAdmin, async (req, res) => {
 // GET /admin/users
 router.get("/users", requireAdmin, async (req, res) => {
   try {
-    const [rows] = await pool.query(
-      `
+    const [rows] = await pool.query(`
       SELECT
         id,
         username,
@@ -184,8 +221,7 @@ router.get("/users", requireAdmin, async (req, res) => {
       WHERE deleted_at IS NULL
       ORDER BY created_at DESC
       LIMIT 500
-      `
-    );
+    `);
 
     return res.json({ users: rows });
   } catch (err) {
